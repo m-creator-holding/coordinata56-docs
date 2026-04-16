@@ -1,0 +1,140 @@
+# coordinata56
+
+Операционно-управленческая ERP-платформа для коттеджного посёлка **«Координата 56»** (85 домов бизнес-класса, 4 типовых проекта с опциями, полный цикл под ключ).
+
+Первый пилотный модуль холдинга Мартина. Стек: Python 3.12 + FastAPI + SQLAlchemy 2.0 + PostgreSQL 16 + React + TypeScript + Vite + shadcn/ui + Docker.
+
+## Ключевые документы (навигация)
+
+**Стратегия и цели**
+- [Дорожная карта (10 фаз)](ROADMAP.md)
+- [Статус фаз и прогресс](docs/phases/phase-3-kickoff.md)
+- [Скоуп текущей Фазы 3](docs/specs/phase-3-scope.md)
+- [Решения Владельца по открытым вопросам](docs/phases/phase-3-decisions.md)
+
+**Регламенты и процесс**
+- [Регламент субагентов v1.0 (17 ролей)](docs/agents/regulations_draft_v1.md)
+- [v1.1 — скилы и источники знаний](docs/agents/regulations_addendum_v1.1.md)
+- [v1.2 — регламент Координатора, RACI, DoD](docs/agents/regulations_addendum_v1.2.md)
+- [v1.3 — уроки Фазы 2 (2026-04-15)](docs/agents/regulations_addendum_v1.3.md)
+- [Definition of Done — общий чек-лист](docs/agents/phase-checklist.md)
+- [DoD Фазы 3](docs/agents/phase-3-checklist.md)
+- [CLAUDE.md — живой антипаттерник](CLAUDE.md)
+
+**Архитектура (ADR)**
+- [ADR 0001 — модель данных v1](docs/adr/0001-data-model-v1.md)
+- [ADR 0002 — технологический стек](docs/adr/0002-tech-stack.md)
+- [ADR 0003 — аутентификация MVP](docs/adr/0003-auth-mvp.md)
+- [ADR 0004 — структура CRUD-слоя](docs/adr/0004-crud-layer-structure.md)
+- [ADR 0005 — формат ошибок API](docs/adr/0005-api-error-format.md)
+- [ADR 0006 — пагинация и фильтрация](docs/adr/0006-pagination-filtering.md)
+- [ADR 0007 — аудит-лог](docs/adr/0007-audit-log.md)
+
+**Спецификации**
+- [User Stories Фазы 3](docs/specs/phase-3-user-stories.md)
+- [Ретроспектива Фазы 2](docs/knowledge/retros/phase_2_retro.md)
+- [Глоссарий](docs/knowledge/glossary.md)
+
+## Структура
+
+```
+coordinata56/
+├── backend/           # FastAPI + SQLAlchemy (Python 3.12)
+│   ├── app/           # Код приложения
+│   └── tests/         # Юнит и интеграционные тесты
+├── frontend/          # React + TypeScript + Vite + shadcn/ui
+├── migrations/        # Alembic миграции
+├── tests/             # Сквозные (E2E) тесты
+├── docs/              # Документация, ADR, регламент субагентов, wireframes
+│   ├── adr/           # Architecture Decision Records
+│   ├── agents/        # Регламент 17 ИИ-субагентов (v1.0 + v1.1 + v1.2)
+│   ├── knowledge/     # База знаний: уроки, решения, глоссарий, запросы
+│   ├── qa/            # QA-отчёты и тест-планы
+│   ├── security/      # Security-отчёты и аудиты
+│   ├── stories/       # User Stories
+│   ├── wireframes/    # Описания UX-сценариев
+│   └── integrations/  # Документация интеграций с внешними системами
+├── infra/             # Инфраструктурные файлы
+├── scripts/           # Скрипты для локальной разработки
+├── docker-compose.yml # Локальное окружение: postgres + backend + frontend
+├── .env.dev.example   # Шаблон переменных окружения для разработки
+└── Makefile           # Команды разработки (up, down, logs, psql, migrate…)
+```
+
+## Быстрый старт для разработки
+
+### Требования
+
+- Docker Desktop (или Docker Engine + Docker Compose v2)
+- GNU Make (входит в macOS Xcode CLI Tools; на Windows — через WSL2)
+
+### Первый запуск
+
+```bash
+# 1. Клонировать репозиторий (если ещё не сделано)
+git clone <repo-url> coordinata56
+cd coordinata56
+
+# 2. Создать файл переменных окружения
+cp .env.dev.example .env.dev
+# Откройте .env.dev и смените пароли (POSTGRES_PASSWORD, JWT_SECRET_KEY)
+
+# 3. Поднять все сервисы (PostgreSQL, backend, frontend, Adminer)
+make up
+```
+
+После успешного запуска доступны:
+
+| Сервис    | Адрес                      | Описание                        |
+|-----------|----------------------------|---------------------------------|
+| Backend   | http://127.0.0.1:8000      | FastAPI REST API                |
+| Swagger   | http://127.0.0.1:8000/docs | Интерактивная документация API  |
+| Frontend  | http://127.0.0.1:5173      | React + Vite (hot-reload)       |
+| Adminer   | http://127.0.0.1:8080      | Веб-интерфейс PostgreSQL        |
+| PostgreSQL| 127.0.0.1:5433             | Прямое подключение (порт 5433)  |
+
+### Повседневные команды
+
+```bash
+make logs        # логи всех сервисов в реальном времени
+make logs-back   # только backend
+make psql        # psql-консоль PostgreSQL
+make migrate     # применить Alembic-миграции (alembic upgrade head)
+make migration MSG="добавить таблицу lots"  # создать новую миграцию
+make shell-back  # bash внутри backend-контейнера
+make down        # остановить сервисы (данные сохраняются)
+make reset-db    # ОСТОРОЖНО: удалить все данные БД и начать заново
+make build       # пересобрать образы после изменений в Dockerfile
+```
+
+### Как работает hot-reload
+
+- **Backend**: uvicorn запускается с флагом `--reload`. Любое изменение `.py`-файла в `backend/` вызывает перезагрузку сервера автоматически.
+- **Frontend**: Vite HMR (hot module replacement). Изменения в `frontend/src/` отражаются в браузере без перезагрузки страницы.
+- Исходники обоих сервисов монтируются как volume — код не копируется в образ при запуске, только при сборке.
+
+### Структура окружения
+
+```
+docker-compose.yml       # описывает 4 сервиса + сеть + тома
+.env.dev.example         # шаблон (коммитится в git)
+.env.dev                 # реальные значения (НЕ коммитится, в .gitignore)
+backend/Dockerfile       # multi-stage: deps → development → production
+frontend/Dockerfile      # multi-stage: deps → development → production (nginx)
+Makefile                 # удобные команды для разработчика
+```
+
+## Документация
+
+- **ROADMAP.md** — дорожная карта MVP (10 фаз, 12–15 недель)
+- **AGENTS.md** — состав ИИ-команды
+- **docs/agents/** — полный регламент 17 субагентов и Координатора
+- **docs/adr/** — архитектурные решения
+- **docs/knowledge/** — база знаний проекта (уроки, глоссарий, решения)
+
+## Статус
+
+Версия: 0.0.1 (Фаза 0 — инфраструктура)
+
+Владелец: Мартин
+Разработка: автоматическая, Claude Code + команда ИИ-субагентов
