@@ -52,7 +52,7 @@
 
 ## Открытый tech-debt (не блокирует закрытие)
 
-См. `docs/phases/phase-3-tech-debt.md`. Не блокирует Батч B/C. Закрывается:
+См. `docs/pods/cottage-platform/phases/phase-3-tech-debt.md`. Не блокирует Батч B/C. Закрывается:
 - P3-1 nit: stray import → следующий коммит
 - P3-5: silent except в has_references → до production
 - P3-6: TEST_DATABASE_URL дефолт → перед CI/CD

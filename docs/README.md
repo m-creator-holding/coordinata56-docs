@@ -206,5 +206,5 @@ docs/
 | `docs/knowledge/` | База знаний: глоссарий, журнал решений, уроки, ретроспективы. |
 | `docs/qa/` | Стандарты тестирования, чек-листы, критерии качества. |
 | `docs/security/` | Политика безопасности, требования к паролям, управление доступом. |
-| `docs/stories/` | Пользовательские истории (User Stories): что нужно построить и зачем. |
-| `docs/wireframes/` | Прототипы экранов: описание интерфейса перед реализацией. |
+| `docs/pods/cottage-platform/stories/` | Пользовательские истории (User Stories) pod'а cottage-platform. |
+| `docs/pods/cottage-platform/wireframes/` | Прототипы экранов pod'а cottage-platform. |

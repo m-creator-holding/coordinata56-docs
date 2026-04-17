@@ -213,8 +213,8 @@ coordinata56 строится одним Владельцем (Мартин) с 
 | Регламенты направлений | `docs/agents/departments/*.md` | Директор направления + governance-director |
 | Должностные инструкции | `~/.claude/agents/*.md` | Координатор |
 | ADR | `docs/adr/NNNN-*.md` | architect + Координатор |
-| User Stories | `docs/specs/user-stories/` | analyst |
-| Wireframes | `docs/specs/wireframes.md` | designer |
+| User Stories | `docs/pods/<pod>/specs/user-stories/` | analyst |
+| Wireframes | `docs/pods/<pod>/wireframes/` | designer |
 | Ревью | `docs/reviews/` | reviewer, security, review-head |
 | Ретроспективы фаз | `docs/knowledge/retros/phase_N_retro.md` | Координатор |
 | Находки R&I | `docs/research/findings.md` | ri-scout |

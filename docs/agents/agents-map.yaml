@@ -1,10 +1,3 @@
-# coordinata56 — машинно-читаемая карта субагентов
-# Версия: 1.0
-# Дата: 2026-04-16
-# Источник: ~/.claude/agents/ + docs/agents/departments/*.md + regulations_addendum_v1.4/v1.5
-# Правила: status "active" = файл существует в ~/.claude/agents/; "dormant" = описан в регламенте v1.4, но не создан
-# Все поля — если данных не хватает, используется unknown с пометкой notes.
-
 meta:
   version: 1.1
   date: 2026-04-16
@@ -12,191 +5,283 @@ meta:
   total_active: 27
   total_dormant_with_stub_file: 21
   total_builtin_claude_code: 5
-  levels: [L0, L1, L2, L3, L4, staff, builtin]
-  departments: [backend, quality, governance, research, frontend, design, infrastructure, legal]
-  note_on_dormant: "По решению Владельца 2026-04-16 (Telegram msg 629) все dormant-агенты по v1.4 созданы как файлы в ~/.claude/agents/ со статусом dormant. Файл существует ≠ агент активирован. При активации — обновляется status_meaning в этом yaml и снимается пометка 💤 в паспорте/диаграммах."
-  note_on_strict_chain: "2026-04-16 Telegram msg 665: строгая цепочка Президент→Директор→Head→Worker. Координатор передаёт задачи только Директорам. 3 Директора (frontend, design, infra) сперва переведены в active-supervising, затем по msg 695 активированы 5 Начальников отделов (frontend-head, ux-head, devops-head, db-head, integrator-head) для соблюдения эталона Качества (Директор → Head → Worker). Директора теперь просто 'active', не 'supervising'. Legal-director остаётся dormant, юр-вопросы у advisor 'legal' (штаб вне иерархии)."
-  note_on_connections: "2026-04-16 msg 754: поля связей между агентами (reports_to, can_request, reviewed_by, handoff_to, spawned_by, main_session_capable) — в отдельном источнике истины docs/agents/delegation-rules.yaml. agents-map.yaml отвечает только за паспорт каждого агента (роль, назначение, модель, статус), не за связи. Это избегает дубли."
+  levels:
+  - L0
+  - L1
+  - L2
+  - L3
+  - L4
+  - staff
+  - builtin
+  departments:
+  - backend
+  - quality
+  - governance
+  - research
+  - frontend
+  - design
+  - infrastructure
+  - legal
+  note_on_dormant: По решению Владельца 2026-04-16 (Telegram msg 629) все dormant-агенты по v1.4 созданы как файлы в ~/.claude/agents/ со статусом dormant. Файл существует ≠ агент активирован. При активации
+    — обновляется status_meaning в этом yaml и снимается пометка 💤 в паспорте/диаграммах.
+  note_on_strict_chain: '2026-04-16 Telegram msg 665: строгая цепочка Президент→Директор→Head→Worker. Координатор передаёт задачи только Директорам. 3 Директора (frontend, design, infra) сперва переведены
+    в active-supervising, затем по msg 695 активированы 5 Начальников отделов (frontend-head, ux-head, devops-head, db-head, integrator-head) для соблюдения эталона Качества (Директор → Head → Worker).
+    Директора теперь просто ''active'', не ''supervising''. Legal-director остаётся dormant, юр-вопросы у advisor ''legal'' (штаб вне иерархии).'
+  note_on_connections: '2026-04-16 msg 754: поля связей между агентами (reports_to, can_request, reviewed_by, handoff_to, spawned_by, main_session_capable) — в отдельном источнике истины docs/agents/delegation-rules.yaml.
+    agents-map.yaml отвечает только за паспорт каждого агента (роль, назначение, модель, статус), не за связи. Это избегает дубли.'
   connection_source_of_truth: docs/agents/delegation-rules.yaml
   event_schema: docs/agents/task-event-log.schema.yaml
-
-# -------------------------------------------------------------
-# L0 — Владелец (не субагент, для полноты карты)
-# -------------------------------------------------------------
+agents:
 - name: Владелец (Мартин)
   id: owner
   level: L0
-  department: ~
-  unit: ~
+  department: null
+  unit: null
   role: Единственный заказчик и принимающий стратегические решения
   purpose: Ставит задачи, утверждает фазы, даёт бизнес-контекст, выносит окончательные решения
-  inputs: [бизнес-задачи, обратная связь, приоритеты, отклонения]
-  outputs: [поручения, согласования фаз, одобрения регламента]
-  delegates_to: [coordinator]
-  reviewed_by: ~
-  memory_paths: ~
+  inputs:
+  - бизнес-задачи
+  - обратная связь
+  - приоритеты
+  - отклонения
+  outputs:
+  - поручения
+  - согласования фаз
+  - одобрения регламента
+  delegates_to:
+  - coordinator
+  reviewed_by: null
+  memory_paths: null
   status_meaning: N/A — человек
   risks: Единая точка принятия решений — при недоступности Владельца проект останавливается
-  notes: ~
-
-# -------------------------------------------------------------
-# L1 — Координатор
-# -------------------------------------------------------------
+  notes: null
 - name: Координатор / CEO проекта
   id: coordinator
   level: L1
   department: штаб
-  unit: ~
+  unit: null
   role: Единственная точка контакта с Владельцем, декомпозирует задачи, управляет делегированием
   purpose: Принимать задачи от Владельца, определять уровень (XS/S/M/L), направлять в нужный департамент, следить за общим графиком
-  inputs: [задачи от Владельца, отчёты от Директоров, события из Telegram, систем-реминдеры]
-  outputs: [делегированные задачи Директорам, отчёты Владельцу в Telegram, коммиты в git, обновления памяти]
-  delegates_to: [backend-director, quality-director, governance-director, ri-director, все Советники]
+  inputs:
+  - задачи от Владельца
+  - отчёты от Директоров
+  - события из Telegram
+  - систем-реминдеры
+  outputs:
+  - делегированные задачи Директорам
+  - отчёты Владельцу в Telegram
+  - коммиты в git
+  - обновления памяти
+  delegates_to:
+  - backend-director
+  - quality-director
+  - governance-director
+  - ri-director
+  - все Советники
   reviewed_by: owner
   memory_paths:
-    - /root/.claude/projects/-root/memory/
-    - docs/knowledge/retros/
-    - docs/agents/CODE_OF_LAWS.md
+  - /root/.claude/projects/-root/memory/
+  - docs/knowledge/retros/
+  - docs/agents/CODE_OF_LAWS.md
   status_meaning: active (основной Claude в сессии)
   risks:
-    - Единая точка — перегрузка при большом потоке задач
-    - Контекст сессии теряется при перезапуске, если не записан в память
+  - Единая точка — перегрузка при большом потоке задач
+  - Контекст сессии теряется при перезапуске, если не записан в память
   notes: Регламент — docs/agents/regulations/coordinator.md. Модель — Claude Opus 4.6. Не является файлом в ~/.claude/agents/.
-
-# -------------------------------------------------------------
-# L2 — Директора направлений (активные: 4 из 8)
-# -------------------------------------------------------------
+  agent_type: executive
 - name: Директор по бэкенду
   id: backend-director
   level: L2
   department: backend
-  unit: ~
+  unit: null
   role: Владеет стратегией бэкенда, декомпозирует задачи уровня M, владеет departments/backend.md
   purpose: Разбивать крупные задачи бэкенда на батчи, распределять через backend-head, не писать код
-  inputs: [задачи от Координатора, отчёты от backend-head]
-  outputs: [декомпозиция на шаги, обновления departments/backend.md, вердикт по работе отдела]
-  delegates_to: [backend-head, integrator-head (dormant)]
+  inputs:
+  - задачи от Координатора
+  - отчёты от backend-head
+  outputs:
+  - декомпозиция на шаги
+  - обновления departments/backend.md
+  - вердикт по работе отдела
+  delegates_to:
+  - backend-head
+  - integrator-head (dormant)
   reviewed_by: coordinator
-  memory_paths: [docs/agents/departments/backend.md]
+  memory_paths:
+  - docs/agents/departments/backend.md
   status_meaning: active (регламент backend.md v1.0 действующий)
   risks: Модель Opus — дорого; должен декомпозировать только задачи M+, для S — работать напрямую через backend-head
   notes: Файл ~/.claude/agents/backend-director.md
-
+  agent_type: core_department
 - name: Директор по качеству
   id: quality-director
   level: L2
   department: quality
-  unit: ~
+  unit: null
   role: Стратегия качества — тесты, ревью, security; владеет departments/quality.md
   purpose: Распределять работу через qa-head и review-head, определять стратегию покрытия
-  inputs: [фазы/батчи от Координатора, замечания от ревьюеров, security-находки]
-  outputs: [стратегия тестирования фазы, обновления departments/quality.md, финальная приёмка пакета Батча]
-  delegates_to: [qa-head, review-head]
+  inputs:
+  - фазы/батчи от Координатора
+  - замечания от ревьюеров
+  - security-находки
+  outputs:
+  - стратегия тестирования фазы
+  - обновления departments/quality.md
+  - финальная приёмка пакета Батча
+  delegates_to:
+  - qa-head
+  - review-head
   reviewed_by: coordinator
-  memory_paths: [docs/agents/departments/quality.md]
+  memory_paths:
+  - docs/agents/departments/quality.md
   status_meaning: active
   risks: Не должен делать файловое ревью сам — это уровень reviewer/security
   notes: Файл ~/.claude/agents/quality-director.md
-
+  agent_type: core_department
 - name: Директор Governance (Свод законов)
   id: governance-director
   level: L2
   department: governance
-  unit: ~
+  unit: null
   role: Председатель комиссии по изменению регламента, владелец глобальной карты регламента
   purpose: Рассматривать заявки на правку CLAUDE.md, CODE_OF_LAWS, regulations_*, departments/*; вердикт approve/reject
-  inputs: [заявки в docs/governance/requests/, отчёты аудитора]
-  outputs: [вердикты, обновления в CHANGELOG.md, координация еженедельного цикла аудита]
-  delegates_to: [governance-auditor]
+  inputs:
+  - заявки в docs/governance/requests/
+  - отчёты аудитора
+  outputs:
+  - вердикты
+  - обновления в CHANGELOG.md
+  - координация еженедельного цикла аудита
+  delegates_to:
+  - governance-auditor
   reviewed_by: coordinator
-  memory_paths: [docs/agents/CODE_OF_LAWS.md, docs/agents/departments/governance.md, docs/governance/CHANGELOG.md]
+  memory_paths:
+  - docs/agents/CODE_OF_LAWS.md
+  - docs/agents/departments/governance.md
+  - docs/governance/CHANGELOG.md
   status_meaning: active (создан 2026-04-15 в bootstrap)
   risks: Инерция — если не заводит заявки по еженедельным находкам, отчёты превращаются в архив
   notes: Файл ~/.claude/agents/governance-director.md + копия docs/agents/subagents/
-
+  agent_type: governance
 - name: Директор R&I (Research & Integration)
   id: ri-director
   level: L2
   department: research
-  unit: ~
+  unit: null
   role: Приоритизация находок внешнего сенсинга, решение «пилот/отклонить», weekly digest Владельцу
   purpose: Сенсить индустрию Claude Code / AI-агентов / MCP, фильтровать, пилотировать полезное
-  inputs: [находки от ri-scout, RFC от ri-analyst, запросы Координатора]
-  outputs: [weekly digest понедельник 10:00, решения pilot/reject, правки departments/research.md]
-  delegates_to: [ri-scout, ri-analyst]
+  inputs:
+  - находки от ri-scout
+  - RFC от ri-analyst
+  - запросы Координатора
+  outputs:
+  - weekly digest понедельник 10:00
+  - решения pilot/reject
+  - правки departments/research.md
+  delegates_to:
+  - ri-scout
+  - ri-analyst
   reviewed_by: coordinator
-  memory_paths: [docs/research/findings.md, docs/research/rfc/, docs/agents/departments/research.md]
+  memory_paths:
+  - docs/research/findings.md
+  - docs/research/rfc/
+  - docs/agents/departments/research.md
   status_meaning: active (pilot-режим)
   risks: Без жёсткого бюджета внимания может тянуть находки без фильтра; надо держать 3-7 в digest
   notes: Файл ~/.claude/agents/ri-director.md
-
+  agent_type: core_department
 - name: Директор по фронтенду
   id: frontend-director
   level: L2
   department: frontend
-  unit: ~
+  unit: null
   role: Принимает фронтенд-задачи от Координатора, делегирует через frontend-head
   purpose: Владелец departments/frontend.md, декомпозиция UI-задач, финальная приёмка
-  inputs: [задачи от Координатора]
-  outputs: [делегирование frontend-head, приёмка пакета]
-  delegates_to: [frontend-head]
+  inputs:
+  - задачи от Координатора
+  outputs:
+  - делегирование frontend-head
+  - приёмка пакета
+  delegates_to:
+  - frontend-head
   reviewed_by: coordinator
-  memory_paths: [docs/agents/departments/frontend.md]
+  memory_paths:
+  - docs/agents/departments/frontend.md
   status_meaning: active — активирован 2026-04-16 (msg 665 → supervising, msg 695 → active, эталон Директор→Head→Worker)
   risks: departments/frontend.md пока v0.1
   notes: frontend-head активирован параллельно; работает по стандартной цепочке.
-
+  agent_type: core_department
 - name: Директор по дизайну
   id: design-director
   level: L2
   department: design
-  unit: ~
+  unit: null
   role: Принимает дизайн-задачи от Координатора, делегирует через ux-head
   purpose: Владелец departments/design.md, стратегия UX/UI/контент
-  inputs: [задачи от Координатора]
-  outputs: [делегирование ux-head, приёмка wireframes/визуала]
-  delegates_to: [ux-head (активен), visual-head (dormant до Фазы 4), content-head (dormant)]
+  inputs:
+  - задачи от Координатора
+  outputs:
+  - делегирование ux-head
+  - приёмка wireframes/визуала
+  delegates_to:
+  - ux-head (активен)
+  - visual-head (dormant до Фазы 4)
+  - content-head (dormant)
   reviewed_by: coordinator
-  memory_paths: [docs/agents/departments/design.md]
+  memory_paths:
+  - docs/agents/departments/design.md
   status_meaning: active — активирован 2026-04-16, по msg 695 работает по эталону через ux-head
   risks: departments/design.md пока v0.1
   notes: ux-head курирует designer'а; visual-head и content-head поднимутся на Фазе 4.
-
+  agent_type: core_department
 - name: Директор по инфраструктуре
   id: infra-director
   level: L2
   department: infrastructure
-  unit: ~
+  unit: null
   role: Принимает инфра/БД-задачи от Координатора, делегирует через devops-head и db-head
   purpose: Владелец departments/infrastructure.md, стратегия deploy/БД/интеграции
-  inputs: [задачи от Координатора]
-  outputs: [делегирование Начальникам отделов, утверждение миграций, согласование production]
-  delegates_to: [devops-head, db-head, integrator-head (формально под backend-director, фактически кросс-вертикаль)]
+  inputs:
+  - задачи от Координатора
+  outputs:
+  - делегирование Начальникам отделов
+  - утверждение миграций
+  - согласование production
+  delegates_to:
+  - devops-head
+  - db-head
+  - integrator-head (формально под backend-director
+  - фактически кросс-вертикаль)
   reviewed_by: coordinator
-  memory_paths: [docs/agents/departments/infrastructure.md]
+  memory_paths:
+  - docs/agents/departments/infrastructure.md
   status_meaning: active — активирован 2026-04-16, по msg 695 работает через Head по эталону
   risks: Не трогать production без одобрения Владельца; первый живой внешний API-вызов — только с согласования
   notes: devops-head, db-head, integrator-head активированы 2026-04-16 msg 695.
-
+  agent_type: core_department
 - name: Директор по юридическим вопросам
   id: legal-director
   level: L2
   department: legal
-  unit: ~
+  unit: null
   role: unknown (dormant)
   purpose: Активируется при первом боевом контакте с ПД/договором — 152-ФЗ, 214-ФЗ, 63-ФЗ
-  inputs: [юридические риски, договоры с подрядчиками, ПД-события]
-  outputs: [departments/legal.md, юр-чек-листы]
-  delegates_to: [legal-head (dormant)]
+  inputs:
+  - юридические риски
+  - договоры с подрядчиками
+  - ПД-события
+  outputs:
+  - departments/legal.md
+  - юр-чек-листы
+  delegates_to:
+  - legal-head (dormant)
   reviewed_by: coordinator
-  memory_paths: [docs/agents/departments/legal.md]
+  memory_paths:
+  - docs/agents/departments/legal.md
   status_meaning: dormant
   risks: При активации универсальный советник legal заменяется тремя специализированными юристами
   notes: Сейчас legal (L-штаб) отвечает за юридические вопросы на уровне советника.
-
-# -------------------------------------------------------------
-# L3 — Начальники отделов и особые L3-роли (активные: 6)
-# -------------------------------------------------------------
+  agent_type: core_department
 - name: Начальник отдела API (бэкенд)
   id: backend-head
   level: L3
@@ -204,15 +289,21 @@ meta:
   unit: api
   role: Тактическое управление 1–3 backend-dev, первичное ревью их кода
   purpose: Разбивать задачи от Директора на под-задачи под исполнителей, собирать их отчёты, делать первичное ревью
-  inputs: [декомпозированные задачи от backend-director]
-  outputs: [распределение между backend-dev-1/2/3, первичное ревью, сводный отчёт Директору]
-  delegates_to: [backend-dev (1–3 параллельных)]
+  inputs:
+  - декомпозированные задачи от backend-director
+  outputs:
+  - распределение между backend-dev-1/2/3
+  - первичное ревью
+  - сводный отчёт Директору
+  delegates_to:
+  - backend-dev (1–3 параллельных)
   reviewed_by: backend-director
-  memory_paths: [docs/agents/departments/backend.md]
+  memory_paths:
+  - docs/agents/departments/backend.md
   status_meaning: active
   risks: Должен использовать Sonnet (тактика), не Opus
   notes: Файл ~/.claude/agents/backend-head.md
-
+  agent_type: core_department
 - name: Начальник отдела тестирования
   id: qa-head
   level: L3
@@ -220,15 +311,20 @@ meta:
   unit: testing
   role: Координация qa-1/qa-2, ревью покрытия тестами
   purpose: Распределять тест-задачи, проверять coverage, первичное ревью test-кода
-  inputs: [стратегия тестирования от quality-director]
-  outputs: [test-plan батча, первичное ревью qa-работы]
-  delegates_to: [qa (1-2 параллельных)]
+  inputs:
+  - стратегия тестирования от quality-director
+  outputs:
+  - test-plan батча
+  - первичное ревью qa-работы
+  delegates_to:
+  - qa (1-2 параллельных)
   reviewed_by: quality-director
-  memory_paths: [docs/agents/departments/quality.md]
+  memory_paths:
+  - docs/agents/departments/quality.md
   status_meaning: active
-  risks: ~
+  risks: null
   notes: Файл ~/.claude/agents/qa-head.md
-
+  agent_type: core_department
 - name: Начальник отдела ревью и безопасности
   id: review-head
   level: L3
@@ -236,15 +332,23 @@ meta:
   unit: review
   role: Финальное ревью фаз, координация reviewer и security-аудитора
   purpose: Обеспечивать согласованность ревью всей фазы, не только отдельных файлов
-  inputs: [выходные пакеты от backend, security-находки]
-  outputs: [финальный review-верdict фазы, сводный отчёт Директору]
-  delegates_to: [reviewer (1-2), security]
+  inputs:
+  - выходные пакеты от backend
+  - security-находки
+  outputs:
+  - финальный review-верdict фазы
+  - сводный отчёт Директору
+  delegates_to:
+  - reviewer (1-2)
+  - security
   reviewed_by: quality-director
-  memory_paths: [docs/agents/departments/quality.md, docs/reviews/]
+  memory_paths:
+  - docs/agents/departments/quality.md
+  - docs/reviews/
   status_meaning: active
   risks: Модель Opus — нужно для глубины финальных ревью
   notes: Файл ~/.claude/agents/review-head.md
-
+  agent_type: core_department
 - name: Scout отдела R&I
   id: ri-scout
   level: L3
@@ -252,15 +356,20 @@ meta:
   unit: sensing
   role: Ежедневное сканирование внешних источников, triage, запись находок в findings.md
   purpose: Обнаруживать полезное в индустрии — GitHub Trending, Anthropic changelog, HN, Simon Willison
-  inputs: [расписание сканирования]
-  outputs: [строки в docs/research/findings.md, мини-брифы в docs/research/briefs/<slug>.md — расшифровка простым языком]
+  inputs:
+  - расписание сканирования
+  outputs:
+  - строки в docs/research/findings.md
+  - мини-брифы в docs/research/briefs/<slug>.md — расшифровка простым языком
   delegates_to: ~ (не делегирует)
   reviewed_by: ri-director
-  memory_paths: [docs/research/findings.md, docs/research/briefs/]
+  memory_paths:
+  - docs/research/findings.md
+  - docs/research/briefs/
   status_meaning: active
   risks: Бюджет внимания ≤2ч/день; расшифровка простым языком — обязательна для каждой находки
   notes: Файл ~/.claude/agents/ri-scout.md. При потоке <3 находок/неделю может совмещаться с ri-analyst.
-
+  agent_type: core_department
 - name: Analyst отдела R&I
   id: ri-analyst
   level: L3
@@ -268,15 +377,18 @@ meta:
   unit: analysis
   role: Глубокий анализ находок Scout'а, написание RFC
   purpose: По находке — что это, какая у нас проблема, аналог у нас, дельта, риск, оценка внедрения
-  inputs: [находки из findings.md (колонка Кому адресовать = ri-analyst)]
-  outputs: [RFC в docs/research/rfc/rfc-NNN-<slug>.md с обязательной расшифровкой для Владельца (раздел 0)]
-  delegates_to: ~
+  inputs:
+  - находки из findings.md (колонка Кому адресовать = ri-analyst)
+  outputs:
+  - RFC в docs/research/rfc/rfc-NNN-<slug>.md с обязательной расшифровкой для Владельца (раздел 0)
+  delegates_to: null
   reviewed_by: ri-director
-  memory_paths: [docs/research/rfc/]
+  memory_paths:
+  - docs/research/rfc/
   status_meaning: active
   risks: Бюджет на RFC — ≤4ч
   notes: Файл ~/.claude/agents/ri-analyst.md. При потоке <3 находок/неделю может совмещаться с ri-scout.
-
+  agent_type: core_department
 - name: Аудитор Governance
   id: governance-auditor
   level: L3
@@ -284,18 +396,21 @@ meta:
   unit: audit
   role: Периодический аудит регламента и поведения субагентов
   purpose: Искать противоречия, дубли, пробелы в CLAUDE.md, CODE_OF_LAWS, regulations_*, departments/*, ADR
-  inputs: [все регламентные документы, коммиты, отчёты ревьюеров]
-  outputs: [еженедельный отчёт в docs/governance/audits/weekly/, поведенческие отчёты в .../behavioral/]
-  delegates_to: ~
+  inputs:
+  - все регламентные документы
+  - коммиты
+  - отчёты ревьюеров
+  outputs:
+  - еженедельный отчёт в docs/governance/audits/weekly/
+  - поведенческие отчёты в .../behavioral/
+  delegates_to: null
   reviewed_by: governance-director
-  memory_paths: [docs/governance/audits/]
+  memory_paths:
+  - docs/governance/audits/
   status_meaning: active
   risks: Должен использовать Opus для глубины сравнительного чтения; не правит документы сам — только репортит
   notes: Файл ~/.claude/agents/governance-auditor.md
-
-# -------------------------------------------------------------
-# L3/L4 dormant начальники (описаны v1.4, не созданы)
-# -------------------------------------------------------------
+  agent_type: governance
 - name: Начальник отдела интеграций
   id: integrator-head
   level: L3
@@ -305,7 +420,7 @@ meta:
   purpose: Тактическое управление интеграциями, anti-corruption layer
   status_meaning: active-supervising — активирован 2026-04-16 msg 695 (эталон Директор→Head→Worker)
   notes: Сейчас один integrator под тобой; при росте — до 2.
-
+  agent_type: core_department
 - name: Начальник отдела клиентской разработки
   id: frontend-head
   level: L3
@@ -314,7 +429,7 @@ meta:
   role: Курирует frontend-dev, первичное ревью компонентов
   status_meaning: active-supervising — активирован 2026-04-16 msg 695
   notes: Сейчас один frontend-dev; при росте — до 2.
-
+  agent_type: core_department
 - name: Начальник отдела UX
   id: ux-head
   level: L3
@@ -323,21 +438,21 @@ meta:
   role: Курирует designer (универсального), принимает wireframes и user flows
   status_meaning: active-supervising — активирован 2026-04-16 msg 695
   notes: Сейчас один designer (совмещает ux-researcher+ux-designer); при росте поднимутся оба как отдельные Worker'ы.
-
+  agent_type: core_department
 - name: Начальник отдела визуального дизайна
   id: visual-head
   level: L3
   department: design
   unit: visual
   status_meaning: dormant
-
+  agent_type: core_department
 - name: Начальник отдела контента
   id: content-head
   level: L3
   department: design
   unit: content
   status_meaning: dormant
-
+  agent_type: core_department
 - name: Начальник отдела инфраструктуры
   id: devops-head
   level: L3
@@ -346,7 +461,7 @@ meta:
   role: Курирует devops, проверка docker-compose, CI/CD, бэкапов
   status_meaning: active-supervising — активирован 2026-04-16 msg 695
   notes: Любая правка production — только через Директора, Координатора, Владельца.
-
+  agent_type: core_department
 - name: Начальник отдела БД
   id: db-head
   level: L3
@@ -354,17 +469,14 @@ meta:
   unit: database
   role: Курирует db-engineer, финальная проверка DDL-миграций (round-trip)
   status_meaning: active-supervising — активирован 2026-04-16 msg 695
-
+  agent_type: core_department
 - name: Начальник юридического отдела
   id: legal-head
   level: L3
   department: legal
   unit: legal-research
   status_meaning: dormant — файл создан 2026-04-16
-
-# -------------------------------------------------------------
-# L4 dormant сотрудники (описаны v1.4, созданы как файлы 2026-04-16)
-# -------------------------------------------------------------
+  agent_type: core_department
 - name: UX-исследователь
   id: ux-researcher
   level: L4
@@ -373,7 +485,7 @@ meta:
   role: Интервью, jobs-to-be-done, персоны, user flows
   status_meaning: dormant — файл создан 2026-04-16, активация Фаза 4
   notes: Файл ~/.claude/agents/ux-researcher.md
-
+  agent_type: core_department
 - name: UX-проектировщик
   id: ux-designer
   level: L4
@@ -382,7 +494,7 @@ meta:
   role: Wireframes, прототипы, подбор shadcn/ui-компонентов
   status_meaning: dormant — файл создан 2026-04-16, активация Фаза 4
   notes: При активации принимает зону текущего `designer` (универсального)
-
+  agent_type: core_department
 - name: UI-дизайнер
   id: ui-designer
   level: L4
@@ -390,7 +502,7 @@ meta:
   unit: visual
   role: Визуальная реализация wireframes, дизайн-токены, тема shadcn/ui
   status_meaning: dormant — файл создан 2026-04-16, активация Фаза 4
-
+  agent_type: core_department
 - name: Аудитор доступности
   id: accessibility-auditor
   level: L4
@@ -398,7 +510,7 @@ meta:
   unit: visual
   role: WCAG 2.1 AA, контрасты, клавиатурная навигация, ARIA
   status_meaning: dormant — файл создан 2026-04-16, активация Фаза 4
-
+  agent_type: core_department
 - name: UX-копирайтер
   id: ux-writer
   level: L4
@@ -406,7 +518,7 @@ meta:
   unit: content
   role: Тексты интерфейса, микрокопия, сообщения об ошибках
   status_meaning: dormant — файл создан 2026-04-16, активация Фаза 4
-
+  agent_type: core_department
 - name: Копирайтер
   id: copywriter
   level: L4
@@ -414,7 +526,7 @@ meta:
   unit: content
   role: Маркетинговые тексты, email-шаблоны, описания
   status_meaning: dormant — файл создан 2026-04-16, активация Фаза 4+ (полноценно после MVP)
-
+  agent_type: core_department
 - name: Юрист-исследователь
   id: legal-researcher
   level: L4
@@ -422,7 +534,7 @@ meta:
   unit: legal-research
   role: Нормы, судебная практика, изменения в ФЗ
   status_meaning: dormant — файл создан 2026-04-16, активация при боевых данных
-
+  agent_type: core_department
 - name: Юрист-аналитик
   id: legal-analyst
   level: L4
@@ -430,7 +542,7 @@ meta:
   unit: legal-analysis
   role: Применение норм к конкретным ситуациям проекта
   status_meaning: dormant — файл создан 2026-04-16, активация при боевых данных
-
+  agent_type: core_department
 - name: Юрист-договорник
   id: legal-copywriter
   level: L4
@@ -438,10 +550,7 @@ meta:
   unit: legal-contracts
   role: Договоры с подрядчиками, NDA, согласия на ПД, оферты, политики
   status_meaning: dormant — файл создан 2026-04-16, активация при боевых данных
-
-# -------------------------------------------------------------
-# L4 — Сотрудники (активные: 9)
-# -------------------------------------------------------------
+  agent_type: core_department
 - name: Разработчик бэкенда
   id: backend-dev
   level: L4
@@ -449,18 +558,24 @@ meta:
   unit: api
   role: Пишет Python 3.12 + FastAPI + SQLAlchemy 2.0 код
   purpose: Реализовывать эндпоинты, модели, сервисы, бизнес-логику
-  inputs: [задачи от backend-head, User Stories, ADR]
-  outputs: [код в backend/app/, тесты, отчёт head]
-  delegates_to: ~
+  inputs:
+  - задачи от backend-head
+  - User Stories
+  - ADR
+  outputs:
+  - код в backend/app/
+  - тесты
+  - отчёт head
+  delegates_to: null
   reviewed_by: backend-head, reviewer
-  memory_paths: ~
+  memory_paths: null
   status_meaning: active (1 активный, до 3 параллельных)
   risks:
-    - Не принимает архитектурных решений
-    - Не коммитит в git (это Координатор)
-    - Не трогает фронтенд
+  - Не принимает архитектурных решений
+  - Не коммитит в git (это Координатор)
+  - Не трогает фронтенд
   notes: Файл ~/.claude/agents/backend-dev.md
-
+  agent_type: core_department
 - name: Разработчик фронтенда
   id: frontend-dev
   level: L4
@@ -468,14 +583,18 @@ meta:
   unit: components
   role: React 18 + TypeScript + Vite + shadcn/ui
   purpose: Реализовывать страницы, компоненты, формы, роутинг
-  inputs: [wireframes от designer, задачи от Координатора (директор dormant)]
-  outputs: [код в frontend/, тесты]
-  delegates_to: ~
+  inputs:
+  - wireframes от designer
+  - задачи от Координатора (директор dormant)
+  outputs:
+  - код в frontend/
+  - тесты
+  delegates_to: null
   reviewed_by: coordinator, reviewer
   status_meaning: active
   risks: Пока без Директора — Координатор курирует напрямую
   notes: Файл ~/.claude/agents/frontend-dev.md
-
+  agent_type: core_department
 - name: Тестировщик
   id: qa
   level: L4
@@ -483,14 +602,19 @@ meta:
   unit: testing
   role: Пишет pytest/vitest/Playwright тесты, находит баги
   purpose: Тест-дизайн, поиск багов, coverage; баги — документирует, не фиксит
-  inputs: [код, User Stories, скил test-design-equivalence-classes]
-  outputs: [тесты в backend/tests/, bug reports]
-  delegates_to: ~
+  inputs:
+  - код
+  - User Stories
+  - скил test-design-equivalence-classes
+  outputs:
+  - тесты в backend/tests/
+  - bug reports
+  delegates_to: null
   reviewed_by: qa-head
   status_meaning: active
   risks: Может блокировать переход фазы на critical defects
   notes: Файл ~/.claude/agents/qa.md
-
+  agent_type: core_department
 - name: Ревьюер кода
   id: reviewer
   level: L4
@@ -498,14 +622,18 @@ meta:
   unit: review
   role: Независимое ревью кода ДО коммита
   purpose: Проверка на ADR/OWASP/стиль/тесты; вердикт approve/request-changes/reject
-  inputs: [git diff --staged, ADR, CLAUDE.md]
-  outputs: [отчёты в docs/reviews/]
-  delegates_to: ~
+  inputs:
+  - git diff --staged
+  - ADR
+  - CLAUDE.md
+  outputs:
+  - отчёты в docs/reviews/
+  delegates_to: null
   reviewed_by: review-head
   status_meaning: active
   risks: Не правит код сам (read-only по коду)
   notes: Файл ~/.claude/agents/reviewer.md
-
+  agent_type: core_department
 - name: Аудитор безопасности
   id: security
   level: L4
@@ -513,14 +641,17 @@ meta:
   unit: review
   role: Поиск уязвимостей, OWASP Top 10, утечек секретов
   purpose: Аудит кода на безопасность, сканирование зависимостей
-  inputs: [код, CVE-базы]
-  outputs: [security reports]
-  delegates_to: ~
+  inputs:
+  - код
+  - CVE-базы
+  outputs:
+  - security reports
+  delegates_to: null
   reviewed_by: review-head
   status_meaning: active
   risks: Не фиксит сам — только репортит с приоритетом
   notes: Файл ~/.claude/agents/security.md
-
+  agent_type: core_department
 - name: Инженер баз данных
   id: db-engineer
   level: L4
@@ -528,14 +659,19 @@ meta:
   unit: database
   role: PostgreSQL 16 схема, миграции Alembic, индексы, производительность
   purpose: Единственный авторитет по DDL — всё через миграции Alembic
-  inputs: [требования к модели данных, ADR 0001]
-  outputs: [migrations/, модели SQLAlchemy, индексы]
-  delegates_to: ~
+  inputs:
+  - требования к модели данных
+  - ADR 0001
+  outputs:
+  - migrations/
+  - модели SQLAlchemy
+  - индексы
+  delegates_to: null
   reviewed_by: coordinator, backend-director (пока infra-director dormant)
   status_meaning: active
   risks: Пока без Директора — Координатор курирует
   notes: Файл ~/.claude/agents/db-engineer.md
-
+  agent_type: core_department
 - name: DevOps-инженер
   id: devops
   level: L4
@@ -543,14 +679,19 @@ meta:
   unit: devops
   role: Docker, Docker Compose, CI/CD, бэкапы, мониторинг
   purpose: IaC, env, deploy-скрипты
-  inputs: [требования к инфре, статус deploy]
-  outputs: [docker-compose.yml, Makefile, .github/workflows/]
-  delegates_to: ~
+  inputs:
+  - требования к инфре
+  - статус deploy
+  outputs:
+  - docker-compose.yml
+  - Makefile
+  - .github/workflows/
+  delegates_to: null
   reviewed_by: coordinator
   status_meaning: active
   risks: Не трогает production без явного одобрения Владельца
   notes: Файл ~/.claude/agents/devops.md
-
+  agent_type: core_department
 - name: Инженер интеграций
   id: integrator
   level: L4
@@ -558,14 +699,16 @@ meta:
   unit: integrations
   role: Клиенты для банков, ОФД, Росреестра, 1С, Dadata, email/SMS
   purpose: Anti-corruption layer к внешним API
-  inputs: [внешние спецификации API]
-  outputs: [клиенты в backend/app/integrations/]
-  delegates_to: ~
+  inputs:
+  - внешние спецификации API
+  outputs:
+  - клиенты в backend/app/integrations/
+  delegates_to: null
   reviewed_by: backend-director
   status_meaning: active (пока integrator-head dormant — напрямую Директору)
   risks: Перед первым живым API-вызовом — одобрение Владельца (стоит денег)
   notes: Файл ~/.claude/agents/integrator.md
-
+  agent_type: core_department
 - name: Дизайнер UX/UI
   id: designer
   level: L4
@@ -573,163 +716,181 @@ meta:
   unit: ux
   role: Текстовые описания wireframes в markdown (без Figma)
   purpose: User flows, shadcn/ui-компоненты, архитектура информации, персоны
-  inputs: [User Stories, бизнес-требования]
-  outputs: [docs/specs/wireframes.md, описания компонентов]
-  delegates_to: ~
+  inputs:
+  - User Stories
+  - бизнес-требования
+  outputs:
+  - docs/specs/wireframes.md
+  - описания компонентов
+  delegates_to: null
   reviewed_by: coordinator (пока design-director dormant)
   status_meaning: active
-  risks: ~
+  risks: null
   notes: Файл ~/.claude/agents/designer.md
-
-# -------------------------------------------------------------
-# Советники (не в иерархии) — 8
-# -------------------------------------------------------------
+  agent_type: core_department
 - name: Главный архитектор
   id: architect
   level: staff
   department: staff
-  unit: ~
+  unit: null
   role: Высокоуровневый дизайн, ADR, границы модулей, API-контракты, выбор технологий
   purpose: Только архитектурные решения с trade-offs — не пишет production-код
-  inputs: [вопросы о структуре, новые ADR]
-  outputs: [docs/adr/NNNN-*.md]
-  delegates_to: ~
+  inputs:
+  - вопросы о структуре
+  - новые ADR
+  outputs:
+  - docs/adr/NNNN-*.md
+  delegates_to: null
   reviewed_by: coordinator
-  memory_paths: [docs/adr/]
+  memory_paths:
+  - docs/adr/
   status_meaning: active
   risks: Не пишет код
   notes: Файл ~/.claude/agents/architect.md
-
+  agent_type: advisory
 - name: Бизнес-аналитик
   id: analyst
   level: staff
   department: staff
   role: Переводит бизнес-язык Владельца в формальные User Stories с Given/When/Then
   purpose: Задаёт уточняющие вопросы, вскрывает неявные допущения
-  inputs: [запросы Владельца]
-  outputs: [User Stories в docs/specs/user-stories/]
-  delegates_to: ~
+  inputs:
+  - запросы Владельца
+  outputs:
+  - User Stories в docs/specs/user-stories/
+  delegates_to: null
   reviewed_by: coordinator
   status_meaning: active
   risks: Не пишет код, не проектирует, не решает за Владельца
   notes: Файл ~/.claude/agents/analyst.md
-
+  agent_type: advisory
 - name: Универсальный юрист (советник)
   id: legal
   level: staff
   department: staff
   role: Анализ на 152-ФЗ, ТК РФ, 214-ФЗ, 63-ФЗ, ГК РФ гл.37
   purpose: Производит чек-листы; не заменяет лицензированного юриста
-  inputs: [функциональные описания, проектируемые фичи]
-  outputs: [юр-чек-листы в docs/specs/legal/]
-  delegates_to: ~
+  inputs:
+  - функциональные описания
+  - проектируемые фичи
+  outputs:
+  - юр-чек-листы в docs/specs/legal/
+  delegates_to: null
   reviewed_by: coordinator
   status_meaning: active (до активации юр-вертикали)
   risks: Временная роль — при активации legal-director заменяется тремя специализированными юристами
   notes: Файл ~/.claude/agents/legal.md
-
+  agent_type: advisory
 - name: Эксперт по строительству
   id: construction-expert
   level: staff
   department: staff
   role: Знание СНиП/ГОСТ, структура смет, стадии стройки, типовые договоры, 214-ФЗ
   purpose: Первая линия предметного совета — не заменяет ГИПа или генподрядчика
-  inputs: [вопросы по стройке от Координатора]
-  outputs: [docs/knowledge/construction/]
-  delegates_to: ~
+  inputs:
+  - вопросы по стройке от Координатора
+  outputs:
+  - docs/knowledge/construction/
+  delegates_to: null
   reviewed_by: coordinator
   status_meaning: active
   risks: Не заменяет реального специалиста
   notes: Файл ~/.claude/agents/construction-expert.md
-
+  agent_type: domain_pod
 - name: Технический писатель
   id: tech-writer
   level: staff
   department: staff
   role: README, онбординг, API reference, user guides; Diátaxis framework
   purpose: Простой русский для нетехнического Владельца и будущих сотрудников
-  inputs: [код, решения команды]
-  outputs: [README.md, docs/guides/, docs/reference/]
-  delegates_to: ~
+  inputs:
+  - код
+  - решения команды
+  outputs:
+  - README.md
+  - docs/guides/
+  - docs/reference/
+  delegates_to: null
   reviewed_by: coordinator
   status_meaning: active
   risks: Документация обновляется с кодом, не после
   notes: Файл ~/.claude/agents/tech-writer.md
-
+  agent_type: advisory
 - name: Хранитель памяти
   id: memory-keeper
   level: staff
   department: staff
   role: Единственный авторизованный писатель в /root/.claude/projects/-root/memory/
   purpose: Поддерживать MEMORY.md и актуальность памяти между сессиями
-  inputs: [резюме значимых событий сессии]
-  outputs: [обновлённые файлы памяти]
-  delegates_to: ~
+  inputs:
+  - резюме значимых событий сессии
+  outputs:
+  - обновлённые файлы памяти
+  delegates_to: null
   reviewed_by: owner (перед удалением записей)
-  memory_paths: [/root/.claude/projects/-root/memory/]
+  memory_paths:
+  - /root/.claude/projects/-root/memory/
   status_meaning: active
   risks: Не трогает файлы проекта (только memory/); не удаляет без одобрения
   notes: Файл ~/.claude/agents/memory-keeper.md. Координатор может править memory напрямую для консистентности (v1.2 §A4.7).
-
+  agent_type: advisory
 - name: Наставник Владельца
   id: tutor
   level: staff
   department: staff
   role: Обучает Мартина CS-концепциям параллельно с проектом
-  purpose: Формат: зачем → аналогия → конкретика → риски; никогда не тормозит проект
-  inputs: [вопросы Мартина о концепциях]
-  outputs: [docs/knowledge/learning/]
-  delegates_to: ~
+  purpose: 'Формат: зачем → аналогия → конкретика → риски; никогда не тормозит проект'
+  inputs:
+  - вопросы Мартина о концепциях
+  outputs:
+  - docs/knowledge/learning/
+  delegates_to: null
   reviewed_by: owner
   status_meaning: active
-  risks: ~
+  risks: null
   notes: Файл ~/.claude/agents/tutor.md
-
+  agent_type: advisory
 - name: Аналитик данных
   id: data-analyst
   level: staff
   department: staff
   role: SQL-запросы, отчёты, дашборды, BI
   purpose: Работает только с репликой/копией БД — никогда на prod для записи
-  inputs: [бизнес-вопросы, требующие цифр]
-  outputs: [отчёты в docs/reports/]
-  delegates_to: ~
+  inputs:
+  - бизнес-вопросы
+  - требующие цифр
+  outputs:
+  - отчёты в docs/reports/
+  delegates_to: null
   reviewed_by: coordinator
   status_meaning: active
   risks: Не пишет в production DB
   notes: Файл ~/.claude/agents/data-analyst.md
-
-# -------------------------------------------------------------
-# Встроенные Claude Code (не наши, поставляются платформой)
-# -------------------------------------------------------------
+  agent_type: advisory
 - name: general-purpose
   id: general-purpose
   level: builtin
   role: Универсальный агент для сложных многошаговых задач
   status_meaning: active (встроен Claude Code)
   notes: Использовать ограниченно — наши субагенты обычно лучше.
-
 - name: Explore
   id: Explore
   level: builtin
   role: Быстрый агент для исследования кодовой базы
   status_meaning: active
   notes: Для поиска паттернов, файлов по шаблону, открытых вопросов о коде.
-
 - name: Plan
   id: Plan
   level: builtin
   role: Архитектор плана реализации
   status_meaning: active
   notes: Использовать для планирования сложных изменений.
-
 - name: statusline-setup
   id: statusline-setup
   level: builtin
   role: Настройка status line Claude Code
   status_meaning: active
   notes: Утилитарный.
-
 - name: claude-code-guide
   id: claude-code-guide
   level: builtin

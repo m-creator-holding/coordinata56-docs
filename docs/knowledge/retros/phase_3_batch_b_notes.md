@@ -63,7 +63,7 @@
 
 ## Открытый tech-debt
 
-См. обновлённый `docs/phases/phase-3-tech-debt.md` — позиции P3-7 — P3-10.
+См. обновлённый `docs/pods/cottage-platform/phases/phase-3-tech-debt.md` — позиции P3-7 — P3-10.
 
 ## Следующий шаг
 

@@ -22,7 +22,7 @@ common_fields:
   event_id:
     type: string
     required: true
-    description: Уникальный идентификатор события. Формат: `evt_<timestamp>_<random>`
+    description: "Уникальный идентификатор события. Формат: `evt_<timestamp>_<random>`"
   event_type:
     type: string
     required: true
@@ -118,7 +118,7 @@ events:
         description: Критерии готовности
       reason:
         type: string
-        description: Коротко: зачем делегация
+        description: "Коротко: зачем делегация"
     example:
       event_id: evt_1713262820_def2
       event_type: delegation_requested
