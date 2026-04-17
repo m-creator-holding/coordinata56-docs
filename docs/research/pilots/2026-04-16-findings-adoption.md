@@ -19,7 +19,7 @@
 **Статус пилота.** Готов к запуску. Команда для запуска в следующей сессии:
 ```
 Мартин в терминале: claude → /schedule create
-  prompt: "Прочти docs/research/findings.md и docs/research/rfc/; собери 3-7 свежих находок R&I с расшифровкой простым русским; отправь в Telegram chat <OWNER_CHAT_ID> как weekly digest."
+  prompt: "Прочти docs/research/findings.md и docs/research/rfc/; собери 3-7 свежих находок R&I с расшифровкой простым русским; отправь в Telegram chat 5360165355 как weekly digest."
   cron: "0 10 * * MON"
   channel: plugin:telegram
 ```

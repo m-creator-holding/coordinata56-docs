@@ -48,6 +48,7 @@ agents:
     can_request: [
       backend-director, quality-director, governance-director, ri-director,
       frontend-director, design-director, infra-director, legal-director,
+      innovation-director,
       architect, analyst, legal, construction-expert,
       tech-writer, memory-keeper, tutor, data-analyst
     ]
@@ -139,6 +140,16 @@ agents:
     spawned_by: coordinator
     main_session_capable: true
     status: dormant
+
+  - id: innovation-director
+    level: L2
+    department: innovation
+    reports_to: coordinator
+    can_request: [innovation-analyst, trend-scout, market-researcher, architect, analyst, ri-director]
+    reviewed_by: coordinator
+    handoff_to: [coordinator]
+    spawned_by: coordinator
+    main_session_capable: true
 
   # ========================= L3 — Начальники отделов и особые =========================
   - id: backend-head
@@ -294,6 +305,38 @@ agents:
     can_request: [legal-researcher, legal-analyst, legal-copywriter]
     reviewed_by: legal-director
     handoff_to: [legal-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: innovation-analyst
+    level: L3
+    department: innovation
+    reports_to: innovation-director
+    can_request: []
+    reviewed_by: innovation-director
+    handoff_to: [innovation-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: trend-scout
+    level: L4
+    department: innovation
+    reports_to: innovation-director
+    can_request: []
+    reviewed_by: innovation-director
+    handoff_to: [innovation-director]
+    spawned_by: coordinator
+    main_session_capable: false
+
+  - id: market-researcher
+    level: L4
+    department: innovation
+    reports_to: innovation-director
+    can_request: []
+    reviewed_by: innovation-director
+    handoff_to: [innovation-director]
     spawned_by: coordinator
     main_session_capable: false
     status: dormant
@@ -503,6 +546,106 @@ agents:
     can_request: []
     reviewed_by: [legal-head]
     handoff_to: [legal-head]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  # ========================= L4 — Инноваторы (dormant) =========================
+  - id: backend-innovator
+    level: L4
+    department: backend
+    reports_to: backend-director
+    can_request: []
+    reviewed_by: [backend-director]
+    handoff_to: [backend-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: frontend-innovator
+    level: L4
+    department: frontend
+    reports_to: frontend-director
+    can_request: []
+    reviewed_by: [frontend-director]
+    handoff_to: [frontend-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: quality-innovator
+    level: L4
+    department: quality
+    reports_to: quality-director
+    can_request: []
+    reviewed_by: [quality-director]
+    handoff_to: [quality-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: infrastructure-innovator
+    level: L4
+    department: infrastructure
+    reports_to: infra-director
+    can_request: []
+    reviewed_by: [infra-director]
+    handoff_to: [infra-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: governance-innovator
+    level: L4
+    department: governance
+    reports_to: governance-director
+    can_request: []
+    reviewed_by: [governance-director]
+    handoff_to: [governance-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: research-innovator
+    level: L4
+    department: research
+    reports_to: ri-director
+    can_request: []
+    reviewed_by: [ri-director]
+    handoff_to: [ri-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: legal-innovator
+    level: L4
+    department: legal
+    reports_to: legal-director
+    can_request: []
+    reviewed_by: [legal-director]
+    handoff_to: [legal-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: design-innovator
+    level: L4
+    department: design
+    reports_to: design-director
+    can_request: []
+    reviewed_by: [design-director]
+    handoff_to: [design-director]
+    spawned_by: coordinator
+    main_session_capable: false
+    status: dormant
+
+  - id: innovation-innovator
+    level: L4
+    department: innovation
+    reports_to: innovation-director
+    can_request: []
+    reviewed_by: [innovation-director]
+    handoff_to: [innovation-director]
     spawned_by: coordinator
     main_session_capable: false
     status: dormant

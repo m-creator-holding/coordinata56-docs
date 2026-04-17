@@ -1,7 +1,7 @@
 meta:
   version: 1.1
   date: 2026-04-16
-  total_agent_files_in_claude_agents_dir: 48
+  total_agent_files_in_claude_agents_dir: 61
   total_active: 27
   total_dormant_with_stub_file: 21
   total_builtin_claude_code: 5
@@ -22,6 +22,7 @@ meta:
   - design
   - infrastructure
   - legal
+  - innovation
   note_on_dormant: По решению Владельца 2026-04-16 (Telegram msg 629) все dormant-агенты по v1.4 созданы как файлы в ~/.claude/agents/ со статусом dormant. Файл существует ≠ агент активирован. При активации
     — обновляется status_meaning в этом yaml и снимается пометка 💤 в паспорте/диаграммах.
   note_on_strict_chain: '2026-04-16 Telegram msg 665: строгая цепочка Президент→Директор→Head→Worker. Координатор передаёт задачи только Директорам. 3 Директора (frontend, design, infra) сперва переведены
@@ -240,6 +241,38 @@ agents:
   risks: При активации универсальный советник legal заменяется тремя специализированными юристами
   notes: Сейчас legal (L-штаб) отвечает за юридические вопросы на уровне советника.
   agent_type: core_department
+- name: Директор Департамента инноваций и развития
+  id: innovation-director
+  level: L2
+  department: innovation
+  role: "Директор Департамента инноваций и развития"
+  agent_type: core_department
+  status: active
+
+- name: Innovation Analyst
+  id: innovation-analyst
+  level: L3
+  department: innovation
+  role: "Innovation Analyst — глубокий разбор находок"
+  agent_type: core_department
+  status: dormant
+
+- name: Trend Scout
+  id: trend-scout
+  level: L4
+  department: innovation
+  role: "Trend Scout — скан внешних источников"
+  agent_type: core_department
+  status: active
+
+- name: Market Researcher
+  id: market-researcher
+  level: L4
+  department: innovation
+  role: "Market Researcher — конкурентный анализ"
+  agent_type: core_department
+  status: dormant
+
 - name: Начальник отдела API (бэкенд)
   id: backend-head
   level: L3
@@ -360,8 +393,8 @@ agents:
   unit: integrations
   role: Курирует integrator, первичное ревью adapter-клиентов
   purpose: Тактическое управление интеграциями, anti-corruption layer
-  status_meaning: active-supervising — активирован 2026-04-16 msg 695 (эталон Директор→Head→Worker)
-  notes: Сейчас один integrator под тобой; при росте — до 2.
+  status: active
+  notes: Активирован 2026-04-16 msg 695 (эталон Директор→Head→Worker). Сейчас один integrator под тобой; при росте — до 2.
   agent_type: core_department
 - name: Начальник отдела клиентской разработки
   id: frontend-head
@@ -369,8 +402,8 @@ agents:
   department: frontend
   unit: components
   role: Курирует frontend-dev, первичное ревью компонентов
-  status_meaning: active-supervising — активирован 2026-04-16 msg 695
-  notes: Сейчас один frontend-dev; при росте — до 2.
+  status: active
+  notes: Активирован 2026-04-16 msg 695. Сейчас один frontend-dev; при росте — до 2.
   agent_type: core_department
 - name: Начальник отдела UX
   id: ux-head
@@ -378,8 +411,8 @@ agents:
   department: design
   unit: ux
   role: Курирует designer (универсального), принимает wireframes и user flows
-  status_meaning: active-supervising — активирован 2026-04-16 msg 695
-  notes: Сейчас один designer (совмещает ux-researcher+ux-designer); при росте поднимутся оба как отдельные Worker'ы.
+  status: active
+  notes: Активирован 2026-04-16 msg 695. Сейчас один designer (совмещает ux-researcher+ux-designer); при росте поднимутся оба как отдельные Worker'ы.
   agent_type: core_department
 - name: Начальник отдела визуального дизайна
   id: visual-head
@@ -401,8 +434,8 @@ agents:
   department: infrastructure
   unit: devops
   role: Курирует devops, проверка docker-compose, CI/CD, бэкапов
-  status_meaning: active-supervising — активирован 2026-04-16 msg 695
-  notes: Любая правка production — только через Директора, Координатора, Владельца.
+  status: active
+  notes: Активирован 2026-04-16 msg 695. Любая правка production — только через Директора, Координатора, Владельца.
   agent_type: core_department
 - name: Начальник отдела БД
   id: db-head
@@ -410,7 +443,8 @@ agents:
   department: infrastructure
   unit: database
   role: Курирует db-engineer, финальная проверка DDL-миграций (round-trip)
-  status_meaning: active-supervising — активирован 2026-04-16 msg 695
+  status: active
+  notes: Активирован 2026-04-16 msg 695.
   agent_type: core_department
 - name: Начальник юридического отдела
   id: legal-head
@@ -530,7 +564,7 @@ agents:
   - код в frontend/
   - тесты
   status_meaning: active
-  risks: Пока без Директора — Координатор курирует напрямую
+  risks: null
   notes: Файл ~/.claude/agents/frontend-dev.md
   agent_type: core_department
 - name: Тестировщик
@@ -599,7 +633,7 @@ agents:
   - модели SQLAlchemy
   - индексы
   status_meaning: active
-  risks: Пока без Директора — Координатор курирует
+  risks: null
   notes: Файл ~/.claude/agents/db-engineer.md
   agent_type: core_department
 - name: DevOps-инженер
@@ -652,6 +686,78 @@ agents:
   risks: null
   notes: Файл ~/.claude/agents/designer.md
   agent_type: core_department
+- name: Инноватор бэкенда
+  id: backend-innovator
+  level: L4
+  department: backend
+  role: Сотрудник развития департамента бэкенда
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор фронтенда
+  id: frontend-innovator
+  level: L4
+  department: frontend
+  role: Сотрудник развития департамента фронтенда
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор качества
+  id: quality-innovator
+  level: L4
+  department: quality
+  role: Сотрудник развития департамента качества
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор инфраструктуры
+  id: infrastructure-innovator
+  level: L4
+  department: infrastructure
+  role: Сотрудник развития департамента инфраструктуры
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор governance
+  id: governance-innovator
+  level: L4
+  department: governance
+  role: Сотрудник развития департамента governance
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор исследований
+  id: research-innovator
+  level: L4
+  department: research
+  role: Сотрудник развития департамента исследований
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор юридического департамента
+  id: legal-innovator
+  level: L4
+  department: legal
+  role: Сотрудник развития юридического департамента
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор дизайна
+  id: design-innovator
+  level: L4
+  department: design
+  role: Сотрудник развития департамента дизайна
+  agent_type: core_department
+  status: dormant
+
+- name: Инноватор инноваций
+  id: innovation-innovator
+  level: L4
+  department: innovation
+  role: Сотрудник развития департамента инноваций
+  agent_type: core_department
+  status: dormant
+
 - name: Главный архитектор
   id: architect
   level: staff
