@@ -48,9 +48,6 @@ agents:
   - поручения
   - согласования фаз
   - одобрения регламента
-  delegates_to:
-  - coordinator
-  reviewed_by: null
   memory_paths: null
   status_meaning: N/A — человек
   risks: Единая точка принятия решений — при недоступности Владельца проект останавливается
@@ -72,13 +69,6 @@ agents:
   - отчёты Владельцу в Telegram
   - коммиты в git
   - обновления памяти
-  delegates_to:
-  - backend-director
-  - quality-director
-  - governance-director
-  - ri-director
-  - все Советники
-  reviewed_by: owner
   memory_paths:
   - /root/.claude/projects/-root/memory/
   - docs/knowledge/retros/
@@ -103,10 +93,6 @@ agents:
   - декомпозиция на шаги
   - обновления departments/backend.md
   - вердикт по работе отдела
-  delegates_to:
-  - backend-head
-  - integrator-head (dormant)
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/departments/backend.md
   status_meaning: active (регламент backend.md v1.0 действующий)
@@ -128,10 +114,6 @@ agents:
   - стратегия тестирования фазы
   - обновления departments/quality.md
   - финальная приёмка пакета Батча
-  delegates_to:
-  - qa-head
-  - review-head
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/departments/quality.md
   status_meaning: active
@@ -152,9 +134,6 @@ agents:
   - вердикты
   - обновления в CHANGELOG.md
   - координация еженедельного цикла аудита
-  delegates_to:
-  - governance-auditor
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/CODE_OF_LAWS.md
   - docs/agents/departments/governance.md
@@ -178,10 +157,6 @@ agents:
   - weekly digest понедельник 10:00
   - решения pilot/reject
   - правки departments/research.md
-  delegates_to:
-  - ri-scout
-  - ri-analyst
-  reviewed_by: coordinator
   memory_paths:
   - docs/research/findings.md
   - docs/research/rfc/
@@ -202,9 +177,6 @@ agents:
   outputs:
   - делегирование frontend-head
   - приёмка пакета
-  delegates_to:
-  - frontend-head
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/departments/frontend.md
   status_meaning: active — активирован 2026-04-16 (msg 665 → supervising, msg 695 → active, эталон Директор→Head→Worker)
@@ -223,11 +195,6 @@ agents:
   outputs:
   - делегирование ux-head
   - приёмка wireframes/визуала
-  delegates_to:
-  - ux-head (активен)
-  - visual-head (dormant до Фазы 4)
-  - content-head (dormant)
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/departments/design.md
   status_meaning: active — активирован 2026-04-16, по msg 695 работает по эталону через ux-head
@@ -247,12 +214,6 @@ agents:
   - делегирование Начальникам отделов
   - утверждение миграций
   - согласование production
-  delegates_to:
-  - devops-head
-  - db-head
-  - integrator-head (формально под backend-director
-  - фактически кросс-вертикаль)
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/departments/infrastructure.md
   status_meaning: active — активирован 2026-04-16, по msg 695 работает через Head по эталону
@@ -273,9 +234,6 @@ agents:
   outputs:
   - departments/legal.md
   - юр-чек-листы
-  delegates_to:
-  - legal-head (dormant)
-  reviewed_by: coordinator
   memory_paths:
   - docs/agents/departments/legal.md
   status_meaning: dormant
@@ -295,9 +253,6 @@ agents:
   - распределение между backend-dev-1/2/3
   - первичное ревью
   - сводный отчёт Директору
-  delegates_to:
-  - backend-dev (1–3 параллельных)
-  reviewed_by: backend-director
   memory_paths:
   - docs/agents/departments/backend.md
   status_meaning: active
@@ -316,9 +271,6 @@ agents:
   outputs:
   - test-plan батча
   - первичное ревью qa-работы
-  delegates_to:
-  - qa (1-2 параллельных)
-  reviewed_by: quality-director
   memory_paths:
   - docs/agents/departments/quality.md
   status_meaning: active
@@ -338,10 +290,6 @@ agents:
   outputs:
   - финальный review-верdict фазы
   - сводный отчёт Директору
-  delegates_to:
-  - reviewer (1-2)
-  - security
-  reviewed_by: quality-director
   memory_paths:
   - docs/agents/departments/quality.md
   - docs/reviews/
@@ -361,8 +309,6 @@ agents:
   outputs:
   - строки в docs/research/findings.md
   - мини-брифы в docs/research/briefs/<slug>.md — расшифровка простым языком
-  delegates_to: ~ (не делегирует)
-  reviewed_by: ri-director
   memory_paths:
   - docs/research/findings.md
   - docs/research/briefs/
@@ -381,8 +327,6 @@ agents:
   - находки из findings.md (колонка Кому адресовать = ri-analyst)
   outputs:
   - RFC в docs/research/rfc/rfc-NNN-<slug>.md с обязательной расшифровкой для Владельца (раздел 0)
-  delegates_to: null
-  reviewed_by: ri-director
   memory_paths:
   - docs/research/rfc/
   status_meaning: active
@@ -403,8 +347,6 @@ agents:
   outputs:
   - еженедельный отчёт в docs/governance/audits/weekly/
   - поведенческие отчёты в .../behavioral/
-  delegates_to: null
-  reviewed_by: governance-director
   memory_paths:
   - docs/governance/audits/
   status_meaning: active
@@ -566,8 +508,6 @@ agents:
   - код в backend/app/
   - тесты
   - отчёт head
-  delegates_to: null
-  reviewed_by: backend-head, reviewer
   memory_paths: null
   status_meaning: active (1 активный, до 3 параллельных)
   risks:
@@ -589,8 +529,6 @@ agents:
   outputs:
   - код в frontend/
   - тесты
-  delegates_to: null
-  reviewed_by: coordinator, reviewer
   status_meaning: active
   risks: Пока без Директора — Координатор курирует напрямую
   notes: Файл ~/.claude/agents/frontend-dev.md
@@ -609,8 +547,6 @@ agents:
   outputs:
   - тесты в backend/tests/
   - bug reports
-  delegates_to: null
-  reviewed_by: qa-head
   status_meaning: active
   risks: Может блокировать переход фазы на critical defects
   notes: Файл ~/.claude/agents/qa.md
@@ -628,8 +564,6 @@ agents:
   - CLAUDE.md
   outputs:
   - отчёты в docs/reviews/
-  delegates_to: null
-  reviewed_by: review-head
   status_meaning: active
   risks: Не правит код сам (read-only по коду)
   notes: Файл ~/.claude/agents/reviewer.md
@@ -646,8 +580,6 @@ agents:
   - CVE-базы
   outputs:
   - security reports
-  delegates_to: null
-  reviewed_by: review-head
   status_meaning: active
   risks: Не фиксит сам — только репортит с приоритетом
   notes: Файл ~/.claude/agents/security.md
@@ -666,8 +598,6 @@ agents:
   - migrations/
   - модели SQLAlchemy
   - индексы
-  delegates_to: null
-  reviewed_by: coordinator, backend-director (пока infra-director dormant)
   status_meaning: active
   risks: Пока без Директора — Координатор курирует
   notes: Файл ~/.claude/agents/db-engineer.md
@@ -686,8 +616,6 @@ agents:
   - docker-compose.yml
   - Makefile
   - .github/workflows/
-  delegates_to: null
-  reviewed_by: coordinator
   status_meaning: active
   risks: Не трогает production без явного одобрения Владельца
   notes: Файл ~/.claude/agents/devops.md
@@ -703,8 +631,6 @@ agents:
   - внешние спецификации API
   outputs:
   - клиенты в backend/app/integrations/
-  delegates_to: null
-  reviewed_by: backend-director
   status_meaning: active (пока integrator-head dormant — напрямую Директору)
   risks: Перед первым живым API-вызовом — одобрение Владельца (стоит денег)
   notes: Файл ~/.claude/agents/integrator.md
@@ -720,10 +646,8 @@ agents:
   - User Stories
   - бизнес-требования
   outputs:
-  - docs/specs/wireframes.md
+  - docs/pods/cottage-platform/wireframes/
   - описания компонентов
-  delegates_to: null
-  reviewed_by: coordinator (пока design-director dormant)
   status_meaning: active
   risks: null
   notes: Файл ~/.claude/agents/designer.md
@@ -740,8 +664,6 @@ agents:
   - новые ADR
   outputs:
   - docs/adr/NNNN-*.md
-  delegates_to: null
-  reviewed_by: coordinator
   memory_paths:
   - docs/adr/
   status_meaning: active
@@ -757,9 +679,7 @@ agents:
   inputs:
   - запросы Владельца
   outputs:
-  - User Stories в docs/specs/user-stories/
-  delegates_to: null
-  reviewed_by: coordinator
+  - User Stories в docs/pods/cottage-platform/stories/
   status_meaning: active
   risks: Не пишет код, не проектирует, не решает за Владельца
   notes: Файл ~/.claude/agents/analyst.md
@@ -774,9 +694,7 @@ agents:
   - функциональные описания
   - проектируемые фичи
   outputs:
-  - юр-чек-листы в docs/specs/legal/
-  delegates_to: null
-  reviewed_by: coordinator
+  - юр-чек-листы в docs/pods/cottage-platform/specs/legal/
   status_meaning: active (до активации юр-вертикали)
   risks: Временная роль — при активации legal-director заменяется тремя специализированными юристами
   notes: Файл ~/.claude/agents/legal.md
@@ -791,8 +709,6 @@ agents:
   - вопросы по стройке от Координатора
   outputs:
   - docs/knowledge/construction/
-  delegates_to: null
-  reviewed_by: coordinator
   status_meaning: active
   risks: Не заменяет реального специалиста
   notes: Файл ~/.claude/agents/construction-expert.md
@@ -810,8 +726,6 @@ agents:
   - README.md
   - docs/guides/
   - docs/reference/
-  delegates_to: null
-  reviewed_by: coordinator
   status_meaning: active
   risks: Документация обновляется с кодом, не после
   notes: Файл ~/.claude/agents/tech-writer.md
@@ -826,8 +740,6 @@ agents:
   - резюме значимых событий сессии
   outputs:
   - обновлённые файлы памяти
-  delegates_to: null
-  reviewed_by: owner (перед удалением записей)
   memory_paths:
   - /root/.claude/projects/-root/memory/
   status_meaning: active
@@ -844,8 +756,6 @@ agents:
   - вопросы Мартина о концепциях
   outputs:
   - docs/knowledge/learning/
-  delegates_to: null
-  reviewed_by: owner
   status_meaning: active
   risks: null
   notes: Файл ~/.claude/agents/tutor.md
@@ -861,8 +771,6 @@ agents:
   - требующие цифр
   outputs:
   - отчёты в docs/reports/
-  delegates_to: null
-  reviewed_by: coordinator
   status_meaning: active
   risks: Не пишет в production DB
   notes: Файл ~/.claude/agents/data-analyst.md

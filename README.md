@@ -1,8 +1,8 @@
-# coordinata56
+# M-OS — внутренняя AI-native платформа холдинга
 
-Операционно-управленческая ERP-платформа для коттеджного посёлка **«Координата 56»** (85 домов бизнес-класса, 4 типовых проекта с опциями, полный цикл под ключ).
+**cottage-platform** — первый пилотный pod (посёлок «Координата 56», 85 домов бизнес-класса, 4 типовых проекта с опциями, полный цикл под ключ).
 
-Первый пилотный модуль холдинга Мартина. Стек: Python 3.12 + FastAPI + SQLAlchemy 2.0 + PostgreSQL 16 + React + TypeScript + Vite + shadcn/ui + Docker.
+Стек: Python 3.12 + FastAPI + SQLAlchemy 2.0 + PostgreSQL 16 + React + TypeScript + Vite + shadcn/ui + Docker.
 
 ---
 

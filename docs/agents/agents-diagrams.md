@@ -28,14 +28,14 @@ flowchart TB
     TG --> Coord
     Coord -->|отчёт| TG
 
-    subgraph L2 ["L2 — Директора (8: 4 активных + 4 dormant)"]
+    subgraph L2 ["L2 — Директора (8: 7 активных + 1 dormant)"]
         BD["backend-director 🟢"]
         QD["quality-director 🟢"]
         GD["governance-director 🟢"]
         RD["ri-director 🟢"]
-        FD["frontend-director 💤"]
-        DsD["design-director 💤"]
-        ID["infra-director 💤"]
+        FD["frontend-director 🟢"]
+        DsD["design-director 🟢"]
+        ID["infra-director 🟢"]
         LD["legal-director 💤"]
     end
 
@@ -43,9 +43,9 @@ flowchart TB
     Coord --> QD
     Coord --> GD
     Coord --> RD
-    Coord -.-> FD
-    Coord -.-> DsD
-    Coord -.-> ID
+    Coord --> FD
+    Coord --> DsD
+    Coord --> ID
     Coord -.-> LD
 
     subgraph Advisors ["Штабные советники (не в иерархии)"]
@@ -62,7 +62,7 @@ flowchart TB
     Coord -.-> Advisors
 ```
 
-**Комментарий:** 4 активных директора реально получают задачи; 4 dormant — файлы созданы, изучают регламент, но задачи получают только с момента активации направления (Фаза 4 для фронта и дизайна, Фаза 9 для инфры, при боевых данных для юр-вертикали).
+**Комментарий:** 7 активных директоров реально получают задачи (backend, quality, governance, ri, frontend, design, infra); 1 dormant (legal-director) — файл создан, задачи получает только при боевых данных. Активация frontend/design/infra — 2026-04-16 msg 665+695.
 
 ---
 
@@ -77,19 +77,17 @@ flowchart TB
     ID["infra-director 💤"]
 
     Coord --> BD
-    Coord -.-> ID
-    Coord -->|пока Директор dormant| DBE["db-engineer"]
-    Coord -->|пока Директор dormant| DO["devops"]
+    Coord --> ID
 
     BD --> BH["backend-head 🟢"]
-    BD -.-> IH["integrator-head 💤"]
+    BD --> IH["integrator-head 🟢"]
     BH --> BDev1["backend-dev-1"]
     BH -.-> BDev2["backend-dev-2 (при нагрузке)"]
     BH -.-> BDev3["backend-dev-3 (при нагрузке)"]
     BD --> INT["integrator"]
 
-    ID -.-> DOH["devops-head 💤"]
-    ID -.-> DBH["db-head 💤"]
+    ID --> DOH["devops-head 🟢"]
+    ID --> DBH["db-head 🟢"]
 ```
 
 ### Б.2 Качество (активно полностью)
@@ -138,19 +136,17 @@ flowchart TB
 ```mermaid
 flowchart TB
     Coord["Координатор"]
-    FD["frontend-director 💤"]
-    DsD["design-director 💤"]
+    FD["frontend-director 🟢"]
+    DsD["design-director 🟢"]
 
-    Coord -.-> FD
-    Coord -.-> DsD
-    Coord -->|пока Директор dormant| FDev["frontend-dev"]
-    Coord -->|пока Директор dormant| Dsg["designer"]
+    Coord --> FD
+    Coord --> DsD
 
-    FD -.-> FH["frontend-head 💤"]
-    FH -.-> FDev
+    FD --> FH["frontend-head 🟢"]
+    FH --> FDev["frontend-dev"]
     FH -.-> FDev2["frontend-dev-2 (при нагрузке)"]
 
-    DsD -.-> UXH["ux-head 💤"]
+    DsD --> UXH["ux-head 🟢"]
     DsD -.-> VH["visual-head 💤"]
     DsD -.-> CH["content-head 💤"]
 
@@ -161,7 +157,7 @@ flowchart TB
     CH -.-> UXW["ux-writer 💤"]
     CH -.-> CW["copywriter 💤"]
 
-    Dsg -.->|при активации переезжает под ux-designer| UXD
+    UXH --> Dsg["designer"]
 ```
 
 ### Б.5 Юридическое направление (dormant, активация при боевых данных)
@@ -196,13 +192,11 @@ flowchart TB
 
     Start --> Triage
 
-    Triage -->|XS: 1 файл <1ч| DirectW["Координатор → Worker"]
-    Triage -->|S: 2–10 файлов, 1 отдел| OneUnit["Координатор → Head → Worker"]
-    Triage -->|M: модуль, 1 направление| OneDept["Координатор → Директор → Head → Workers"]
+    Triage -->|XS: 1 файл, <1ч| OneDept["Координатор → Директор → Head → Worker"]
+    Triage -->|S: 2–10 файлов, 1 отдел| OneDept
+    Triage -->|M: модуль, 1 направление| OneDept
     Triage -->|L: фаза / многонаправленная| Multi["Координатор → несколько Директоров → Heads → Workers"]
 
-    DirectW --> Work
-    OneUnit --> Work
     OneDept --> Work
     Multi --> Work
 
@@ -225,7 +219,7 @@ flowchart TB
 flowchart LR
     Owner["Владелец"]
     Coord["Координатор"]
-    Dirs["Директора (4 активных)"]
+    Dirs["Директора (7 активных + 1 dormant)"]
     Heads["Начальники / особые L3 (6 активных)"]
     Workers["Сотрудники (9 активных)"]
     Advisors["Советники (8)"]
@@ -234,8 +228,7 @@ flowchart LR
 
     Owner -->|ставит| Coord
     Coord -->|делегирует| Dirs
-    Coord -->|прямо| Workers
-    Coord -->|прямо| Advisors
+    Coord -.->|консультации| Advisors
     Dirs -->|делегируют| Heads
     Dirs -.->|консультация| Advisors
     Heads -->|распределяют| Workers
