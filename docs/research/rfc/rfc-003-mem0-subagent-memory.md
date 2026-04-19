@@ -1,10 +1,22 @@
-# RFC-003: Mem0 self-hosted — постоянная память для субагентов coordinata56
+---
+id: RFC-2026-003
+title: Mem0 self-hosted — постоянная память для субагентов coordinata56
+status: accepted
+date: 2026-04-17
+author: ri-director (по поручению ri-analyst, роли совмещены при потоке <3/неделю)
+source_findings: docs/research/findings.md (строка 2026-04-17, Mem0)
+briefs:
+  - docs/research/briefs/brief-2026-04-17-mem0-memory-layer.md
+owner_decision: approved (Telegram msg 1136, 2026-04-17)
+---
+
+# RFC-2026-003: Mem0 self-hosted — постоянная память для субагентов coordinata56
 
 **Автор:** ri-director (по поручению ri-analyst, роли совмещены при потоке <3/неделю)
 **Дата:** 2026-04-17
 **Источник находки:** [findings.md — строка 2026-04-17, Mem0](../findings.md)
 **Бриф:** `docs/research/briefs/brief-2026-04-17-mem0-memory-layer.md`
-**Статус:** draft
+**Статус:** accepted
 **Решение Владельца:** approved (Telegram msg 1136, 2026-04-17 — «давай внедрим долгосрочную память я согласовываю»)
 
 ---
@@ -283,3 +295,150 @@ GET /memory/search
 **Pilot** — пилот одобрен Владельцем (msg 1136). Запрашиваем у Координатора выделение backend-director + qa на 2 рабочих дня.
 
 Ожидаемый результат: 30%+ сокращение токенов на контекст инициализации двух субагентов. При достижении — поэтапный rollout на остальных Директоров (волна 2: governance-auditor, architect; волна 3: остальные).
+
+---
+
+## Amendment 2026-04-17 — Решение 12 Владельца (msg 1147)
+
+**Автор правки:** ri-director
+**Основание:** решение Владельца Telegram msg 1147, 2026-04-17 + аудит внешнего кодекса (GPT, msg 1152, 2026-04-17)
+**Затронутые разделы оригинального RFC:** §7.2 (tcpdump-критерий), §9 (зависимости), §11 (рекомендация)
+
+---
+
+### A1. Запрет Anthropic API для embedding
+
+**Решение:** embedding выполняется **исключительно** через локальную библиотеку `sentence-transformers`. Anthropic API (`/v1/embeddings`) — **запрещён**.
+
+**Обоснование:**
+- Принцип «данные проекта не уходят во внешние сервисы» — та же причина, по которой Mem0 Cloud отвергнут (§2.2 оригинального RFC).
+- Использование Anthropic API для embedding передаёт текст воспоминаний (факты проекта, решения Владельца, контекст субагентов) на серверы Anthropic — нарушение ст. 45а CODE_OF_LAWS v2.1 в части «живых сетевых вызовов к сторонним системам».
+- Аудитор (msg 1152) корректно указал: tcpdump-критерий §7.2 проверял только `mem0.ai / api.mem0.ai`, оставляя канал `api.anthropic.com` вне проверки — это сетевой обход.
+
+**Нормативное основание запрета:**
+> Ст. 45а CODE_OF_LAWS v2.1: живые внешние интеграции — реальные сетевые вызовы к сторонним системам — запрещены до прохождения production-gate проекта.
+> Решение Владельца Telegram msg 1147, 2026-04-17: «embedding только локальный sentence-transformers».
+
+---
+
+### A2. Embedding-модель для русского текста
+
+**Выбранная модель:** `paraphrase-multilingual-mpnet-base-v2` (HuggingFace, sentence-transformers)
+
+**Характеристики:**
+
+| Параметр | Значение |
+|---|---|
+| Размер модели на диске | ~1.1 GB (fp32) |
+| Размерность вектора | 768 |
+| Поддержка языков | 50+ языков, включая русский |
+| Качество на русском | Высокое — обучена специально на multilingual-STS, одна из лучших для русских технических текстов |
+| Скорость inference | ~10-30 мс/запрос на CPU (для коротких текстов памяти) |
+| Лицензия | Apache-2.0 |
+
+**Альтернатива:** `paraphrase-multilingual-MiniLM-L12-v2` — легче (~470 MB), быстрее, качество чуть ниже. Рекомендуется если 1.1 GB неприемлем на сервере.
+
+**Важно:** модель скачивается **один раз при установке** (`pip install sentence-transformers` + первый вызов `SentenceTransformer('...')`). В runtime никаких исходящих запросов к HuggingFace Hub нет — модель работает полностью локально из кэша.
+
+**Конфигурация Mem0 с локальным embedding:**
+```python
+from mem0 import Memory
+
+config = {
+    "embedder": {
+        "provider": "huggingface",
+        "config": {
+            "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
+        }
+    },
+    "vector_store": {
+        "provider": "chroma",
+        "config": {
+            "collection_name": "coordinata56",
+            "path": "/root/coordinata56/data/mem0_chroma"
+        }
+    }
+}
+
+memory = Memory.from_config(config)
+```
+
+---
+
+### A3. Расширенный tcpdump-критерий (замена §7.2)
+
+**Предыдущая версия §7.2 (недостаточна):**
+```
+tcpdump -i any host mem0.ai or host api.mem0.ai
+```
+
+**Новая версия §7.2 (обязательна для пилота):**
+
+```bash
+# Полный egress-мониторинг в runtime — запускать ПАРАЛЛЕЛЬНО с пилотом
+tcpdump -i any -n \
+  '(host mem0.ai or host api.mem0.ai) or
+   (host api.anthropic.com) or
+   (host api.openai.com) or
+   (host api.huggingface.co)'
+```
+
+Результат: **0 пакетов** по каждому из хостов во время работы Mem0 в runtime.
+
+**Разрешённый egress-whitelist для пилота (всё прочее — запрещено):**
+
+| Хост | Протокол | Назначение | Разрешён? |
+|---|---|---|---|
+| `localhost` / `127.0.0.1` | любой | ChromaDB in-process | Да |
+| `localhost` / `127.0.0.1` | любой | FastAPI backend | Да |
+| Внутренняя сеть сервера | любой | Внутренние ресурсы проекта | Да |
+| `api.anthropic.com` | HTTPS | LLM inference (не embedding) | **Только для LLM-вызовов субагентов; embedding — запрещён** |
+| `api.mem0.ai`, `mem0.ai` | любой | Mem0 Cloud | Запрещён |
+| `api.openai.com` | любой | OpenAI API | Запрещён |
+| `api.huggingface.co` | любой | HuggingFace runtime | Запрещён в runtime; разрешён только при первоначальной установке |
+
+**Примечание по `api.anthropic.com`:** LLM-вызовы субагентов через этот хост — рабочий режим Claude Code, не блокируются. Блокируется **исключительно** использование `/v1/embeddings` endpoint через embedding-конфиг Mem0. Проверка: убедиться что конфиг Mem0 не содержит `provider: "anthropic"` в секции `embedder`.
+
+---
+
+### A4. Обновлённые зависимости (замена §9, таблица)
+
+| Библиотека | Статус | Версия (пилот) | Лицензия | Примечания |
+|---|---|---|---|---|
+| `mem0ai` | Обязательная | `0.1.x` (фиксировать точную) | Apache-2.0 | Основная библиотека |
+| `chromadb` | Обязательная | `0.5.x` (транзитивная) | Apache-2.0 | Векторное хранилище |
+| `sentence-transformers` | **Обязательная** (ранее — опциональная) | `2.x` (фиксировать точную) | Apache-2.0 | Локальный embedding — единственный разрешённый |
+| `openai` | Транзитивная (mem0ai) | `1.x` | MIT | mem0ai тащит для интерфейса; **настроить с dummy endpoint** (см. ниже) или заблокировать через iptables |
+
+**Конфигурация `openai` с dummy endpoint** (чтобы случайный вызов не ушёл на `api.openai.com`):
+```python
+import os
+os.environ["OPENAI_BASE_URL"] = "http://localhost:9999"  # несуществующий порт
+os.environ["OPENAI_API_KEY"] = "dummy-blocked"
+```
+Устанавливать до инициализации `mem0`. Если пакет `openai` попытается инициироваться с реальным endpoint — получит `ConnectionRefused` вместо утечки данных.
+
+---
+
+### A5. Дополнительный шаг пилота: проверка no-outbound sentence-transformers
+
+В план развёртывания (§10) добавить **Шаг 3а** между Шагами 3 и 4:
+
+| Шаг | Что делается | Исполнитель | Критерий готовности |
+|---|---|---|---|
+| 3а | Убедиться что sentence-transformers не делает исходящих запросов в runtime: запустить `strace -e trace=network` или tcpdump во время 10 embedding-запросов к уже установленной модели | qa | 0 исходящих соединений к внешним хостам; все сетевые операции — только loopback |
+
+Если обнаружен outbound к `api.huggingface.co` в runtime — это **инцидент по ст. 45б CODE_OF_LAWS v2.1** (доклад Владельцу через Координатора). Возможная причина: sentence-transformers пытается проверить обновление модели. Митигация: `TRANSFORMERS_OFFLINE=1` в env.
+
+---
+
+### A6. Итоговый список изменений Amendment
+
+| Пункт RFC | Было | Стало |
+|---|---|---|
+| §7.2 tcpdump-критерий | Проверяет только mem0.ai / api.mem0.ai | Проверяет 4 хоста: mem0.ai, api.anthropic.com, api.openai.com, api.huggingface.co |
+| §9 sentence-transformers | «опционально, только если локальный embedding» | Обязательная зависимость; единственный разрешённый embedding |
+| §9 openai | «тащится, уточняется в пилоте» | Настроить с dummy endpoint или заблокировать iptables |
+| §9 примечание | Допускал Anthropic API как альтернативу embedding | Anthropic API для embedding — запрещён (ст. 45а + Решение 12 msg 1147) |
+| §10 план развёртывания | Шаг 3 — только mem0.ai tcpdump | Добавлен Шаг 3а: проверка no-outbound sentence-transformers |
+| Embedding-модель | all-MiniLM-L6-v2 (английская) | paraphrase-multilingual-mpnet-base-v2 (русский/многоязычный) |

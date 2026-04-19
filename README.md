@@ -8,7 +8,35 @@
 
 ## Что система умеет сейчас
 
-По состоянию на Фазу 3 (закрыта технически 2026-04-16) бэкенд системы охватывает **полный учётный цикл** строительства посёлка.
+По состоянию на Sprint 2 Volna A (2026-04-19) система охватывает **полный учётный цикл** строительства посёлка с многокомпанийной изоляцией, ролевым управлением правами, административной панелью, событийными шинами и интеграционным слоем.
+
+**Многокомпанийная архитектура (Sprint 1, US-01):**
+- Данные каждого юрлица изолированы — бухгалтер одной компании физически не может видеть данные другой.
+- Фильтрация по компании встроена в базовый сервисный слой (`CompanyScopedService`), а не разбросана по коду.
+- Суперадмин (holding owner) имеет доступ ко всем компаниям сразу.
+
+**Авторизация и токены (Sprint 1, US-02):**
+- JWT-токен содержит список компаний пользователя и признак суперадмина.
+- При работе с несколькими компаниями клиент указывает активную через заголовок `X-Company-ID`.
+
+**Тонкая настройка прав доступа — RBAC v2 (Sprint 1, US-03):**
+- Права определяются тройкой: роль + действие + тип ресурса (например, бухгалтер может читать договоры, но не удалять).
+- Матрица прав хранится в базе данных — добавить новое право можно без деплоя кода.
+- Все write-эндпоинты API переведены на `require_permission`.
+
+**Событийные шины (Sprint 2 Volna A, US-04 + US-05):**
+- `BusinessEventBus` — шина деловых событий: платёж одобрен, договор подписан, стадия дома изменена. Подписчики регистрируются декоратором, ядро их не знает напрямую.
+- `AgentControlBus` — шина управления ИИ-субагентами: сигналы запуска и остановки проходят через единую точку контроля.
+
+**Интеграционный слой (Sprint 2 Volna A, US-06 + US-07):**
+- ACL IntegrationAdapter: входящие данные из внешних систем (1С, банки) преобразуются во внутренние модели на границе. Внутренний код никогда не видит чужие форматы.
+- Pluggability container: новый адаптер или интеграция регистрируется в одном месте и подключается/отключается без правки ядра.
+
+**Административная панель (Wave 11):**
+- `/admin/permissions` — визуальная матрица прав: кто что может делать.
+- `/admin/companies` — реестр компаний: создание, редактирование, вкладка с 7 параметрами настроек.
+- `/admin/users` — реестр пользователей: назначение ролей прямо в строке таблицы (inline).
+- `/admin/rules` — бизнес-правила в трёх категориях: Финансы, Кадры, Процессы.
 
 **Каталог и объекты:**
 - Реестр из 85 домов с типами, опциями и историей смены стадий строительства.
@@ -31,72 +59,76 @@
 - Запись о закупке привязана к дому и стадии; итоговая сумма рассчитывается автоматически.
 
 **Сквозные возможности:**
-- Все изменения фиксируются в журнале аудита с указанием роли, IP и содержимого изменения.
-- 4 роли доступа: Владелец, Бухгалтер, Прораб, Наблюдатель — с раздельными правами на каждую операцию.
+- Все изменения фиксируются в криптографически связанном журнале аудита (SHA-256 цепочка) с указанием роли, IP и содержимого изменения.
+- 14 полей персональных данных маскируются автоматически на всех средах (включая email).
+- WAL-архив в Yandex Object Storage — непрерывная защита данных между дампами.
 
 **Текущий охват:**
 - 14 сущностей в базе данных
-- 57 эндпоинтов API (22 из них — Батч C: подрядчики, договоры, платежи, закупки)
-- 351 автоматический тест, 0 падений
+- 57 эндпоинтов API
+- 4 страницы Admin UI
+- 2 событийные шины (BusinessEventBus + AgentControlBus)
+- 1С adapter skeleton: 60 тестов, на полке до production-gate
 
 ---
 
-## Ключевые документы (навигация)
+## Текущий статус
 
-**Стратегия и цели**
-- [Дорожная карта (10 фаз)](ROADMAP.md)
-- [Статус Фазы 3](docs/pods/cottage-platform/phases/phase-3-status.md)
-- [Скоуп Фазы 3](docs/pods/cottage-platform/specs/phase-3-scope.md)
-- [Решения Владельца по открытым вопросам](docs/pods/cottage-platform/phases/phase-3-decisions.md)
+| Фаза | Содержание | Статус |
+|------|-----------|--------|
+| 0 | Инфраструктура (Docker, CI, Makefile) | закрыта |
+| 1 | Аутентификация, пользователи, роли | закрыта |
+| 2 | Базовые справочники | закрыта |
+| 3 | Каталог объектов + финансы план/факт | закрыта технически (ожидает OWASP + legal) |
+| M-OS-0 | Реструктуризация в pod-архитектуру | закрыта (`06baf07`, ADR 0008–0010) |
+| M-OS-1 Sprint 1 | Multi-company, JWT, RBAC v2 | закрыт (US-01, US-02, US-03) |
+| M-OS-1 Wave 11 | Admin UI: 4 страницы + регрессия Round 4 | закрыт |
+| M-OS-1 Sprint 2 Volna A | Event Bus, ACL Adapter, Pluggability | закрыт (US-04–US-07) |
+| M-OS-1 Sprint 2 Volna B | Operations UI + оставшиеся US | в работе |
+| M-OS-2 | 1С интеграция + Voice AI | в очереди |
+| M-OS-4 | CV-модуль (видеоаналитика) | в планировании |
 
-**Регламенты и процесс**
-- [Регламент субагентов v1.0 (17 ролей)](docs/agents/regulations_draft_v1.md)
-- [v1.1 — скилы и источники знаний](docs/agents/regulations_addendum_v1.1.md)
-- [v1.2 — регламент Координатора, RACI, DoD](docs/agents/regulations_addendum_v1.2.md)
-- [v1.3 — уроки Фазы 2 (2026-04-15)](docs/agents/regulations_addendum_v1.3.md)
-- [Definition of Done — общий чек-лист](docs/agents/phase-checklist.md)
-- [DoD Фазы 3](docs/agents/phase-3-checklist.md)
-- [CLAUDE.md — живой антипаттерник](CLAUDE.md)
+---
 
-**Архитектура (ADR)**
-- [ADR 0001 — модель данных v1](docs/adr/0001-data-model-v1.md)
-- [ADR 0002 — технологический стек](docs/adr/0002-tech-stack.md)
-- [ADR 0003 — аутентификация MVP](docs/adr/0003-auth-mvp.md)
-- [ADR 0004 — структура CRUD-слоя](docs/adr/0004-crud-layer-structure.md)
-- [ADR 0005 — формат ошибок API](docs/adr/0005-api-error-format.md)
-- [ADR 0006 — пагинация и фильтрация](docs/adr/0006-pagination-filtering.md)
-- [ADR 0007 — аудит-лог](docs/adr/0007-audit-log.md)
-
-**Спецификации**
-- [User Stories Фазы 3](docs/pods/cottage-platform/specs/phase-3-user-stories.md)
-- [Ретроспектива Фазы 3, Батч C](docs/knowledge/retros/phase_3_batch_c_retro.md)
-- [Глоссарий](docs/knowledge/glossary.md)
-
-## Структура
+## Архитектура (схема)
 
 ```
-coordinata56/
-├── backend/           # FastAPI + SQLAlchemy (Python 3.12)
-│   ├── app/           # Код приложения
-│   └── tests/         # Юнит и интеграционные тесты
-├── frontend/          # React + TypeScript + Vite + shadcn/ui
-├── migrations/        # Alembic миграции
-├── tests/             # Сквозные (E2E) тесты
-├── docs/              # Документация, ADR, регламент субагентов, wireframes
-│   ├── adr/           # Architecture Decision Records
-│   ├── agents/        # Регламент 17 ИИ-субагентов (v1.0 + v1.1 + v1.2)
-│   ├── knowledge/     # База знаний: уроки, решения, глоссарий, запросы
-│   ├── qa/            # QA-отчёты и тест-планы
-│   ├── security/      # Security-отчёты и аудиты
-│   ├── stories/       # User Stories
-│   ├── wireframes/    # Описания UX-сценариев
-│   └── integrations/  # Документация интеграций с внешними системами
-├── infra/             # Инфраструктурные файлы
-├── scripts/           # Скрипты для локальной разработки
-├── docker-compose.yml # Локальное окружение: postgres + backend + frontend
-├── .env.dev.example   # Шаблон переменных окружения для разработки
-└── Makefile           # Команды разработки (up, down, logs, psql, migrate…)
+┌─────────────────────────────────────────────────────┐
+│                  Admin UI (React)                   │
+│  /admin/permissions  /admin/companies               │
+│  /admin/users        /admin/rules                   │
+└────────────────────────┬────────────────────────────┘
+                         │ HTTP REST + JWT
+┌────────────────────────▼────────────────────────────┐
+│              FastAPI (Python 3.12)                  │
+│  UserContextMiddleware  →  CompanyScopedService     │
+│  require_permission()   →  role_permissions (БД)   │
+│  audit_service.log()    →  crypto audit chain       │
+│  BusinessEventBus       →  подписчики-обработчики  │
+│  AgentControlBus        →  ИИ-субагенты             │
+│  ACL IntegrationAdapter →  внешние системы          │
+└────────────────────────┬────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────┐
+│              PostgreSQL 16                          │
+│  companies  user_company_roles  role_permissions    │
+│  projects  contracts  payments  materials  ...      │
+│  WAL-архив → Yandex Object Storage (непрерывно)    │
+└─────────────────────────────────────────────────────┘
 ```
+
+**Принцип многокомпанийной изоляции:**
+
+```
+Запрос пользователя
+  → JWT декодируется: company_ids, is_holding_owner
+  → Заголовок X-Company-ID → активная компания
+  → UserContextMiddleware кладёт UserContext в ContextVar
+  → Все сервисы читают UserContext → фильтруют по company_id
+  → В БД уходит SELECT ... WHERE company_id = ? (не постобработка!)
+```
+
+---
 
 ## Быстрый старт для разработки
 
@@ -116,7 +148,10 @@ cd coordinata56
 cp .env.dev.example .env.dev
 # Откройте .env.dev и смените пароли (POSTGRES_PASSWORD, JWT_SECRET_KEY)
 
-# 3. Поднять все сервисы (PostgreSQL, backend, frontend, Adminer)
+# 3. Установить pre-commit хуки (один раз после клонирования)
+bash scripts/install-hooks.sh
+
+# 4. Поднять все сервисы (PostgreSQL, backend, frontend, Adminer)
 make up
 ```
 
@@ -127,6 +162,7 @@ make up
 | Backend   | http://127.0.0.1:8000      | FastAPI REST API                |
 | Swagger   | http://127.0.0.1:8000/docs | Интерактивная документация API  |
 | Frontend  | http://127.0.0.1:5173      | React + Vite (hot-reload)       |
+| Admin UI  | http://127.0.0.1:5173/admin | Административная панель        |
 | Adminer   | http://127.0.0.1:8080      | Веб-интерфейс PostgreSQL        |
 | PostgreSQL| 127.0.0.1:5433             | Прямое подключение (порт 5433)  |
 
@@ -161,32 +197,92 @@ frontend/Dockerfile      # multi-stage: deps → development → production (ngi
 Makefile                 # удобные команды для разработчика
 ```
 
-## Документация
+---
 
-- **ROADMAP.md** — дорожная карта MVP (10 фаз, 12–15 недель)
-- **AGENTS.md** — состав ИИ-команды
-- **docs/agents/** — полный регламент 17 субагентов и Координатора
-- **docs/adr/** — архитектурные решения
-- **docs/knowledge/** — база знаний проекта (уроки, глоссарий, решения)
-- **docs/ONBOARDING.md** — онбординг для новых сотрудников и разработчиков
+## Структура проекта
 
-## Текущий статус
+```
+coordinata56/
+├── backend/           # FastAPI + SQLAlchemy (Python 3.12)
+│   ├── app/           # Код приложения
+│   │   ├── core/      # Ядро M-OS: master_data, integrations, auth, events
+│   │   │   ├── master_data/    # Company, UserCompanyRole
+│   │   │   ├── integrations/   # IntegrationAdapter (ADR 0014), 1С adapter
+│   │   │   └── events/         # BusinessEventBus, AgentControlBus (ADR 0016)
+│   │   └── api/       # FastAPI-роутеры
+│   └── tests/         # Юнит и интеграционные тесты
+├── frontend/          # React + TypeScript + Vite + shadcn/ui
+│   └── src/
+│       ├── pages/admin/       # Admin UI: permissions, companies, users, rules
+│       └── shared/api/        # API-клиенты (TanStack Query)
+├── migrations/        # Alembic миграции
+├── tests/             # Сквозные (E2E) тесты
+├── docs/              # Документация, ADR, регламент субагентов
+│   ├── adr/           # Architecture Decision Records
+│   ├── agents/        # Регламент 17 ИИ-субагентов (v1.0–v1.3)
+│   ├── design/        # Design System
+│   ├── knowledge/     # База знаний: уроки, решения, глоссарий, онбординг
+│   ├── onboarding/    # Онбординг для разработчика и оператора системы
+│   ├── qa/            # QA-отчёты и тест-планы
+│   ├── security/      # Security-отчёты и аудиты
+│   └── pods/          # Спецификации pod-архитектуры
+├── infra/             # Инфраструктурные файлы
+├── scripts/
+│   └── hooks/         # Pre-commit хуки H-1..H-5
+├── CHANGELOG.md       # История изменений по Keep a Changelog
+├── docker-compose.yml # Локальное окружение: postgres + backend + frontend
+├── .env.dev.example   # Шаблон переменных окружения для разработки
+└── Makefile           # Команды разработки (up, down, logs, psql, migrate…)
+```
 
-| Фаза | Содержание | Статус |
-|------|-----------|--------|
-| 0 | Инфраструктура (Docker, CI, Makefile) | ✅ закрыта |
-| 1 | Аутентификация, пользователи, роли | ✅ закрыта |
-| 2 | Базовые справочники | ✅ закрыта |
-| 3 | Каталог объектов + финансы план/факт | ✅ закрыта технически (ожидает OWASP + legal) |
-| 4 | Фронтенд MVP | в очереди |
-| 5–9 | Интеграции, аналитика, M-OS | в очереди |
+---
 
-Версия бэкенда: 0.3.0  
-Владелец: Мартин  
+## Принципы разработки
+
+1. **Skeleton-first для compliance.** Всё, что касается персональных данных (ПД) — строим структуры и маски сразу, а юридические флоу (согласия, уведомления регулятору) — отдельным треком перед выходом в production.
+2. **ИИ делает рутину, человек одобряет важное.** Ни одно финансово или юридически значимое действие не происходит без подтверждения человека.
+3. **Pluggability.** Любая интеграция, модуль, модель ИИ — подключается и отключается без правки ядра.
+4. **Всё записывается.** Каждое действие — в неизменяемом криптографически связанном аудит-журнале.
+5. **Данные изолированы по компании.** Фильтр по `company_id` — на уровне SQL, не постобработкой.
+6. **Тройная защита данных.** WAL-архив (непрерывно) + SQL-дамп (ежедневно) + том Docker (локально).
+
+---
+
+## Ключевые документы (навигация)
+
+**Онбординг**
+- [Быстрый старт разработчика](docs/onboarding/developer-quickstart.md)
+- [Обзор Admin UI для оператора](docs/onboarding/admin-panel-overview.md)
+- [Онбординг разработчика (полный)](docs/knowledge/onboarding/developer.md)
+
+**Стратегия и цели**
+- [Дорожная карта (10 фаз)](ROADMAP.md)
+- [Видение M-OS](docs/m-os-vision.md)
+- [История изменений](CHANGELOG.md)
+- [Статус cottage-platform pod](docs/pods/cottage-platform/status.md)
+
+**Регламенты и процесс**
+- [Регламент субагентов v1.0 (17 ролей)](docs/agents/regulations_draft_v1.md)
+- [v1.1 — скилы и источники знаний](docs/agents/regulations_addendum_v1.1.md)
+- [v1.2 — регламент Координатора, RACI, DoD](docs/agents/regulations_addendum_v1.2.md)
+- [v1.3 — уроки Фазы 2](docs/agents/regulations_addendum_v1.3.md)
+- [Definition of Done — общий чек-лист](docs/agents/phase-checklist.md)
+- [CLAUDE.md — живой антипаттерник](CLAUDE.md)
+
+**Архитектура (ADR)**
+- [ADR 0011 — Foundation: multi-company, RBAC v2, crypto audit](docs/adr/0011-foundation-multi-company-rbac-audit.md)
+- [ADR 0013 — Контракт на эволюцию миграций](docs/adr/0013-migrations-evolution-contract.md)
+- [ADR 0014 — Anti-Corruption Layer](docs/adr/0014-anti-corruption-layer.md)
+- [ADR 0016 — Domain Event Bus](docs/adr/0016-domain-event-bus.md)
+- [ADR 0024 — Verification Gate для live-активаций](docs/adr/0024-verification-gate.md)
+- [ADR 0025 — 1С интеграция (draft)](docs/adr/0025-1c-integration.md)
+- [Все ADR](docs/adr/)
+
+**Дизайн**
+- [Design System v1.0](docs/design/design-system-v1.md)
+
+---
+
+Версия: 0.5.1 (Sprint 2 Volna A)
+Владелец: Мартин
 Разработка: автоматическая, Claude Code + команда ИИ-субагентов
-
-## Что дальше
-
-Следующий шаг после закрытия Фазы 3 — Фаза 4 (фронтенд MVP) или переход к реструктуризации проекта в рамках платформы M-OS.
-
-Подробнее о стратегическом направлении: [`docs/m-os-vision.md`](docs/m-os-vision.md)

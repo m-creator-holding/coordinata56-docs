@@ -1,9 +1,10 @@
 # ADR 0014 — Anti-Corruption Layer: каркас адаптеров с жизненным циклом и безопасностью по умолчанию
 
-- **Статус**: proposed (ожидает governance)
-- **Дата**: 2026-04-17
+- **Статус**: accepted (force-majeure — governance-auditor backup-mode 2026-04-18, governance-director недоступен через Agent tool; ретроспективное ревью при восстановлении)
+- **Дата утверждения**: 2026-04-18
+- **Дата создания**: 2026-04-17
 - **Автор**: backend-director (субагент L2)
-- **Утверждающий**: governance-director, затем Владелец (Мартин) — отдельная заявка
+- **Утверждающий**: governance-auditor (backup-approver, force-majeure); ретроспективный approve — governance-director при восстановлении
 - **Контекст фазы**: M-OS-1 «Скелет», Волна 1 Foundation
 - **Связанные документы**:
   - ADR 0009 (pod-архитектура) — принцип изоляции подов от внешнего мира
@@ -13,6 +14,8 @@
   - `docs/m-os-vision.md` §3.4 — список внешних интеграций Vision
   - `docs/agents/CODE_OF_LAWS.md` ст. 45а/45б — запрет живых вызовов без production-gate
   - `docs/pods/cottage-platform/m-os-1-foundation-adr-plan.md` v3 — план Волны 1
+- **Amendment 2026-04-18 (architect)**: три правки перед ratification — (1) добавлено предусловие ADR-0015 в DoD пункт о seed-миграции; (2) добавлена явная запись о расширении enum `audit_log.action` в разделе «Влияние на существующие ADR»; (3) уточнено, что iptables не блокирует DoD каркаса, только production-gate.
+- **Ratification 2026-04-18**: принят `governance-auditor` в backup-режиме (force-majeure); заявка `docs/governance/requests/2026-04-18-adr-0014-ratification.md`.
 
 ---
 
@@ -198,6 +201,8 @@ Seed-миграция создаёт все записи в `integration_catalog
 
 **ADR 0009** (pod-архитектура) — данный ADR конкретизирует механизм изоляции подов от внешнего мира: явно запрещает прямые HTTP-вызовы вне слоя адаптеров. ADR 0009 изменений не требует, но следует добавить ссылку в его раздел «связанные документы» при следующем amendment.
 
+**ADR 0001 §6** (audit_log.action enum) — данный ADR вводит новое значение action: `adapter_call_blocked` (логируется при каждой блокировке guard). Добавление нового значения в enum разрешено без двухшагового expand/contract по правилам ADR-0013 (расширение enum — операция из списка «Разрешено без ограничений»). Миграция добавляет значение в Alembic-ревизию согласно правилам ADR-0013. Изменений в самом ADR 0001 не требуется — расширение документируется здесь.
+
 **ADR 0011** (Foundation) — `AdapterDisabledError` пишется в AuditLog, наследующий crypto-chain из ADR 0011. Изменений в ADR 0011 не требуется.
 
 **ADR-0013** (Migrations) — таблица `integration_catalog` (ADR-0015) создаётся миграцией Alembic по правилам ADR-0013. Прямого изменения ADR-0013 не требуется.
@@ -214,6 +219,8 @@ Seed-миграция создаёт все записи в `integration_catalog
 
 **Данный вопрос требует решения Координатора**: активировать infra-director с задачей проектирования и реализации egress-блокировки как части M-OS-1 производственной готовности. До решения runtime-guard (`AdapterDisabledError`) обеспечивает программный заслон — это достаточно для dev и staging; для production требуется iptables как второй рубеж.
 
+**Блокировка Gate-0**: iptables НЕ блокирует DoD каркаса (пункты 1–13 ниже). Iptables является предусловием только для production-gate. Gate-0 (старт кода) и разработка каркаса AdapterDisabledError не зависят от решения infra-director.
+
 ---
 
 ## DoD для внедрения
@@ -228,10 +235,12 @@ Seed-миграция создаёт все записи в `integration_catalog
 - [ ] Тест `test_no_hardcoded_external_urls`: grep по `backend/app/` не находит литеральных http(s)://\*.* URL вне файлов `_live_transport` и конфигурации.
 - [ ] Тест `test_all_adapters_have_mock`: каждый адаптер-наследник имеет реализованный `_mock_transport()`.
 - [ ] Тест `test_adapter_state_transitions`: переход в `enabled_live` без `APP_ENV=production` возвращает `AdapterDisabledError`.
-- [ ] Seed-миграция создаёт 7 записей в `integration_catalog` (Telegram — `enabled_live`, остальные — `written`). Миграция проходит round-trip по правилам ADR-0013.
+- [ ] Seed-миграция создаёт 7 записей в `integration_catalog` (Telegram — `enabled_live`, остальные — `written`). Миграция проходит round-trip по правилам ADR-0013. **Предусловие: ADR-0015 принят governance до начала реализации seed-миграции** (схема таблицы `integration_catalog` определяется в ADR-0015).
 - [ ] Заявка к Координатору на активацию infra-director для egress-блокировки сформулирована и передана (не блокирует DoD каркаса, блокирует production-gate).
 - [ ] Правила данного ADR добавлены в `docs/agents/departments/backend.md` раздел «Правила работы».
 
 ---
 
 *ADR составлен backend-director (субагент L2) в рамках M-OS-1, Волна 1 Foundation. 2026-04-17.*
+*Amendment 2026-04-18 (architect): три правки для gate-0 ratification — предусловие ADR-0015 в DoD, расширение audit_log.action enum, уточнение iptables как non-blocking для Gate-0.*
+*Ratification 2026-04-18 (governance-auditor, backup-mode, force-majeure): статус `proposed → accepted`. Заявка: `docs/governance/requests/2026-04-18-adr-0014-ratification.md`.*

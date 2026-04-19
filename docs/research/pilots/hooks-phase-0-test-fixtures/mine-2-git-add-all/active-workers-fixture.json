@@ -1,0 +1,24 @@
+{
+  "_comment": "Fixture для Mine 2. Схема: data['workers'][n]['id'], ['started_at'], ['files_owned']. Соответствует check_add_all.py load_active_workers() / get_owned_files().",
+  "_logic": "Воркер backend-worker-dev-b владеет 12 'своими' файлами (_mine2_own_file*). Файлы _mine2_worker_a_file* НЕ внесены ни в один files_owned — они безхозные с устаревшим mtime → H-2 их пометит чужими.",
+  "workers": [
+    {
+      "id": "backend-worker-dev-b",
+      "started_at": "REPLACE_WITH_CURRENT_TIMESTAMP",
+      "files_owned": [
+        "backend/app/services/_mine2_own_file1.py",
+        "backend/app/services/_mine2_own_file2.py",
+        "backend/app/services/_mine2_own_file3.py",
+        "backend/app/services/_mine2_own_file4.py",
+        "backend/app/services/_mine2_own_file5.py",
+        "backend/app/services/_mine2_own_file6.py",
+        "backend/app/services/_mine2_own_file7.py",
+        "backend/app/services/_mine2_own_file8.py",
+        "backend/app/services/_mine2_own_file9.py",
+        "backend/app/services/_mine2_own_file10.py",
+        "backend/app/services/_mine2_own_file11.py",
+        "backend/app/services/_mine2_own_file12.py"
+      ]
+    }
+  ]
+}

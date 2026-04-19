@@ -107,6 +107,8 @@ UserCompanyRole:
 
 Технически: базовый класс `CompanyScopedService` в ядре реализует метод `_scoped_query(user_context)`, который автоматически добавляет фильтр по `company_id`. Все сервисы предметной логики наследуют его.
 
+> **Совместимость с ADR 0004 MUST #1.** Метод `_scoped_query_conditions(user_context)` возвращает `list[ColumnElement[bool]]` — типизированный SQLAlchemy-предикат (например, `Project.company_id == ctx.company_id`), а не SQL-запрос. Репозиторий принимает этот предикат через параметр `extra_conditions` метода `BaseRepository.list_paginated` и сам строит запрос. Запросы (`select`, `execute`, `COUNT`, `offset/limit`) полностью остаются в репозитории. Этот паттерн явно разрешён Amendment 2026-04-18 к ADR 0004 (MUST #1b). См. `docs/reviews/adr-consistency-audit-2026-04-18.md` §C-03.
+
 **Payment получает собственный `company_id` (денормализация для быстрой фильтрации в `CompanyScopedService`).** Значение при create копируется из `Contract.company_id` — синхронно в сервисном слое, не триггером.
 
 **Исключение — суперадмин.** Пользователь с `role_template=owner` и `company_id=NULL` в токене (специальный флаг `is_holding_owner: bool`) получает bypass company filter. Такого пользователя может создать только другой holding-owner. В системе должен всегда существовать хотя бы один holding-owner.

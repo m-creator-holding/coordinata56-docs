@@ -1,4 +1,13 @@
-# RFC-001: Claude Code Routines для автономных задач coordinata56
+---
+id: RFC-2026-001
+title: Claude Code Routines для автономных задач coordinata56
+status: draft
+date: 2026-04-15
+author: ri-analyst
+source_findings: docs/research/findings.md (строка 2026-04-14, Anthropic release)
+---
+
+# RFC-2026-001: Claude Code Routines для автономных задач coordinata56
 
 **Автор:** ri-analyst
 **Дата:** 2026-04-15

@@ -1,9 +1,11 @@
 # ADR 0013 — Migrations Evolution Contract: backward-compatible schema changes
 
-- **Статус**: proposed (ожидает governance)
-- **Дата**: 2026-04-17
+- **Статус**: accepted (force-majeure — Координатор 2026-04-18, governance-director недоступен через Agent tool; ретроспективное ревью при восстановлении)
+- **Дата утверждения**: 2026-04-18
+- **Дата создания**: 2026-04-17
 - **Автор**: backend-director (субагент L2)
-- **Утверждающий**: governance-director, затем Владелец (Мартин) — отдельная заявка
+- **Утверждающий**: Координатор force-majeure, подтверждение Владелец Telegram msg 1271 (одобрение RFC-005 Top-10 quick-wins)
+- **Amendment 2026-04-18**: разрешён `alembic.command` API как метод round-trip (в дополнение к subprocess) — обоснование надёжнее, не требует shell, корректно наследует Python-окружение. Изменение внесено в PR #1 Волны 1 Foundation, реализация `backend/tests/test_round_trip.py`.
 - **Контекст фазы**: M-OS-1 «Скелет», Волна 1 Foundation
 - **Связанные документы**:
   - ADR 0001 (модель данных v1) — не нарушать

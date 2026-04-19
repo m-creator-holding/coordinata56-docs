@@ -1,0 +1,93 @@
+============================================
+Hooks Phase 0 — Mine Run at 2026-04-18T21:20:30+00:00
+Repo root: /root/worktrees/coordinata56-hooks-pilot
+============================================
+
+--- Mine 1 (env-secret) ---
+---- stderr+stdout ----
+
+HOOK H-1 BLOCK: staged файл '.env.production' — имя совпадает с запрещённым паттерном (секрет/ключ/credentials).
+  Исправление: git reset HEAD '.env.production'
+  Если это шаблон-пример — переименуйте в '.env.production.example' и замените значения на <placeholder>.
+
+HOOK H-1: коммит заблокирован. Устраните нарушения выше и повторите git commit.
+
+pre-commit: коммит ЗАБЛОКИРОВАН — исправьте нарушения выше.
+  Полный обход (не рекомендуется): git commit --no-verify
+---- exit code: 1 ----
+RESULT: PASS (H-1 заблокировал, substring найден)
+[mine-1 exit 0]
+
+--- Mine 2 (git-add-all) ---
+Staged files: 15
+---- stderr+stdout ----
+
+HOOK H-2 WARN: staged 15 файлов, из них 3 подозрительных (не в реестре воркеров и mtime > 4 ч):
+  - backend/app/services/_mine2_worker_a_file1.py
+  - backend/app/services/_mine2_worker_a_file2.py
+  - backend/app/services/_mine2_worker_a_file3.py
+
+HOOK H-2 BLOCK: автономный режим, TTY нет. Слишком много подозрительных staged-файлов.
+  Используйте явный git add:
+    git add path/to/file1 path/to/file2
+  Или установите COORDINATOR_ALLOW_ADD_ALL=1 для разрешения.
+  Или git commit --no-verify для полного обхода.
+
+pre-commit: коммит ЗАБЛОКИРОВАН — исправьте нарушения выше.
+  Полный обход (не рекомендуется): git commit --no-verify
+---- exit code: 1 ----
+RESULT: PASS (H-2 сработал + перечислил чужие файлы)
+[mine-2 exit 0]
+--- Mine 2 ENV-bypass (COORDINATOR_ALLOW_ADD_ALL=1) ---
+HOOK H-2 NOTE: COORDINATOR_ALLOW_ADD_ALL=1 — проверка пропущена. Staged: 15, чужих: 3.
+---- exit code: 0 ----
+RESULT: PASS (ENV-обход работает, коммит прошёл)
+[mine-2-env exit 0]
+--- Fix applied: 2026-04-18 — H-2 fix (RFC-004 Phase I-a) ---
+  Причина А: install-hooks.sh не поддерживал worktree (GIT_HOOKS_DIR через --git-common-dir)
+  Причина Б: REPO_ROOT вычислялся через SCRIPT_DIR.parent.parent (неверно в worktree)
+  Фиксы: check_add_all.py строки 41-51 (REPO_ROOT через git rev-parse --show-toplevel)
+         check_add_all.py строки 68-70 (NON_TTY_HARD_BLOCK_THRESHOLD = 30)
+         check_add_all.py строки 316-329 (жёсткий fallback при staged > 30 non-TTY)
+         install-hooks.sh строки 20-27 (GIT_HOOKS_DIR через --git-common-dir + abs path)
+
+--- Mine 3 (sendmessage-dormant) — MANUAL, см. reproduce.md ---
+
+--- Mine 4 (agent-no-ultrathink) — MANUAL, см. reproduce.md ---
+
+--- Mine 5 (ruff-unused-import) ---
+---- stderr+stdout ----
+HOOK H-5: проверяем 1 Python-файлов...
+All checks passed!
+Would reformat: /root/coordinata56/backend/app/services/project.py
+1 file would be reformatted
+
+HOOK H-5 BLOCK: ruff format --check обнаружил проблемы форматирования.
+  Исправление: ruff format <файл>
+
+pre-commit: коммит ЗАБЛОКИРОВАН — исправьте нарушения выше.
+  Полный обход (не рекомендуется): git commit --no-verify
+---- exit code: 1 ----
+Unstaged changes after reset:
+D	backend/app/services/_mine2_own_file1.py
+D	backend/app/services/_mine2_own_file10.py
+D	backend/app/services/_mine2_own_file11.py
+D	backend/app/services/_mine2_own_file12.py
+D	backend/app/services/_mine2_own_file2.py
+D	backend/app/services/_mine2_own_file3.py
+D	backend/app/services/_mine2_own_file4.py
+D	backend/app/services/_mine2_own_file5.py
+D	backend/app/services/_mine2_own_file6.py
+D	backend/app/services/_mine2_own_file7.py
+D	backend/app/services/_mine2_own_file8.py
+D	backend/app/services/_mine2_own_file9.py
+D	backend/app/services/_mine2_worker_a_file1.py
+D	backend/app/services/_mine2_worker_a_file2.py
+D	backend/app/services/_mine2_worker_a_file3.py
+M	backend/app/services/project.py
+RESULT: PASS (H-5 заблокировал с ruff/F401)
+[mine-5 exit 0]
+
+============================================
+Run complete. Log: /root/coordinata56/docs/research/pilots/hooks-phase-0-test-fixtures/run-all-mines.log
+Для Mine 3 и Mine 4 смотреть соответствующие reproduce.md и прогнать вручную.
