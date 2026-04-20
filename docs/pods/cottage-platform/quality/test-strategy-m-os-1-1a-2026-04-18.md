@@ -2,7 +2,7 @@
 
 - **Дата**: 2026-04-18
 - **Автор**: quality-director (субагент L2)
-- **Версия**: 1.1
+- **Версия**: 1.2
 - **Скоуп**: под-фаза M-OS-1.1A, 12 User Stories, 3 спринта, ~5 недель
 - **Входные данные**:
   - Декомпозиция: `docs/pods/cottage-platform/phases/m-os-1-1a-decomposition-2026-04-18.md`
@@ -13,6 +13,7 @@
 - **История версий**:
   - v1.0 — 2026-04-18 — первая редакция (quality-director)
   - v1.1 — 2026-04-19 — расширение Sprint 2 зон: bus isolation (§12.1), adapter state matrix (§12.2), pod-boundary contracts (§12.3); обновлены §3 coverage, §4 Sprint 2 gate, §7 делегирование, §11 правила (qa-head, coordinata56)
+  - v1.2 — 2026-04-19 — добавлены §13 (BPM test scenarios), §14 (Subagent Status test scenarios), §15 (Notifications test scenarios), §16 (Telegram adapter test scenarios); обновлены §3 coverage targets Sprint 3, §4 Sprint 3 gate (17 total), §7 делегирование Sprint 3 (qa-1 BPM engine, qa-2 Agents+Notifications) (qa-head, coordinata56)
 - **Базовая линия**: 351 pytest зелёный на M-OS-0 (контракт-уровень CRUD коттеджного pod'а)
 - **Цель стратегии**: дать qa-head точный план тестирования по каждой US, описать CI-гейты по спринтам, зафиксировать risk-митигации и targets покрытия
 
@@ -91,6 +92,12 @@
 | **Bus contracts (US-04/05)** — добавлено v1.1 | ≥90% | ≥85% | Contract-слой; дефекты ловятся Pydantic compile-time + runtime; граница шин security-critical |
 | **Adapter state machine (US-07)** — добавлено v1.1 | ≥95% | ≥90% | Security-critical: каждая ветка state×env обязана быть явным тестом; защита ст. 45а/45б CODE_OF_LAWS |
 | **Pod-boundary tests** — добавлено v1.1 | N/A | N/A | Это gate, не coverage-метрика. Либо все проходят, либо фаза блокируется. Первый domain_pod — прецедент для всех будущих. |
+| **BPM models** (US-11 BPM, `workflow_definition`, `workflow_instance`, `workflow_step`) — добавлено v1.2 | ≥90% | ≥85% | Модели и репозитории BPM — новый контрактный слой; дефекты versioning/archive нарушают целостность всего BPM-движка |
+| **BPM services** (`WorkflowService`, `InstanceService`, step execution) — добавлено v1.2 | ≥85% | ≥80% | Сервисный слой содержит бизнес-логику versioning и routing; заглушки для step execution требуют явного покрытия happy+error path |
+| **BPM API endpoints** (Admin API US-12, Engine subscriber US-13) — добавлено v1.2 | ≥80% | ≥75% | Тонкий слой wiring; ключевые риски — RBAC и 404-vs-403 для чужих workflow |
+| **Subagent Status** (`/summary`, `/status/{id}`, heartbeat) — добавлено v1.2 | ≥85% | ≥80% | SQL GROUP BY и polling semantics требуют точного покрытия; role=owner-only — security-critical |
+| **Notifications** (CRUD, filters, read-all, cross-company isolation) — добавлено v1.2 | ≥90% | ≥85% | IDOR — critical; cross-company — critical; atomicity read-all — data integrity |
+| **Telegram ACL adapter** (US-16, mock transport, state routing) — добавлено v1.2 | ≥70% | ≥65% | Mock-first; live transport в dev запрещён; покрывается happy+error paths через mock |
 
 **Инструмент**: `pytest --cov=backend/app --cov-branch --cov-report=term-missing --cov-fail-under=<target>`. Per-module targets через `.coveragerc` с секциями `[report] fail_under` per-path.
 
@@ -129,16 +136,17 @@
 
 **Exit criterion sprint 2**: все 15 gates зелёные.
 
-### Sprint 3 gate — «Integration Registry контракт»
+### Sprint 3 gate — «Integration Registry + BPM + Notifications контракт»
 
 Добавляются:
 
 13. **`test_seed_has_7_records`** — 7 записей, Telegram `enabled_live`, 6 остальных `written`/`enabled=False`
 14. **`test_telegram_dev_env_uses_mock`** — `APP_ENV=dev` → Telegram использует `_mock_transport`
 15. **`integration-registry contract`** — схема таблицы соответствует ADR-0015 (поля, типы, индексы)
-16. **Regression prod-критичных**: все 4 Telegram-теста, которые уже существуют, зелёные с новым adapter-каркасом
+16. **`bpm-gate`** — добавлено v1.2: (а) `test_workflow_version_immutable`: попытка изменить опубликованный `workflow_definition` → 409 Conflict; (б) `test_event_routes_to_correct_instance`: event с `workflow_id` роутится к нужному `workflow_instance` без cross-instance leakage; (в) `test_archive_restore_idempotent`: двойной вызов archive/restore → всегда корректный конечный статус, не ошибка; (г) coverage BPM models ≥90%
+17. **`notifications-idor-gate`** — добавлено v1.2: (а) `test_notification_idor_blocked`: GET `/notifications/{id}` с чужим `id` → 404 (не 403); (б) `test_read_all_atomic`: параллельный `mark_all_read` → ни одно уведомление не остаётся непрочитанным; (в) `test_cross_company_notification_isolation`: пользователь компании A не видит уведомления компании B; (г) coverage Notifications ≥90%
 
-**Exit criterion 1.1A**: все 16 gates зелёные + DoD-пункт 3 декомпозиции (+60-80 новых тестов поверх 351 = ~411-431).
+**Exit criterion 1.1A**: все 17 gates зелёные + DoD-пункт 3 декомпозиции (+80-100 новых тестов поверх 351 = ~431-451).
 
 ---
 
@@ -249,16 +257,25 @@ quality-director **не пишет тесты сам**. Ниже — план т
 
 ### Sprint 3 (нед. 5) — qa-head распределяет:
 
-- **qa-1 — US-11 integration_catalog seed + schema contract**
-  - Файлы: `backend/tests/integrations/test_integration_catalog_seed.py`, `backend/tests/integrations/test_integration_catalog_schema.py`
-  - Покрытие: 7 записей seed, idempotency, schema-контракт с ADR-0015, `get_state()` через repository.
-  - Ориентир: ~6–8 тестов.
-  - Зависимость: ADR-0015 ratified. Если не ratified — тесты готовятся в черновой ветке.
+- **qa-1 — US-11 integration_catalog + BPM Engine tests (US-13)**
+  - Файлы:
+    - `backend/tests/integrations/test_integration_catalog_seed.py`
+    - `backend/tests/integrations/test_integration_catalog_schema.py`
+    - `backend/tests/bpm/test_bpm_engine_subscriber.py`
+    - `backend/tests/bpm/test_bpm_event_routing.py`
+  - Покрытие: 7 записей seed, idempotency, schema-контракт с ADR-0015, `get_state()` через repository; BPM engine subscriber — event→instance routing (§13.4), step execution заглушка (§13.5), archive/restore idempotency (§13.6). Добавлено v1.2.
+  - Ориентир: ~6–8 тестов (catalog) + ~10–12 тестов (BPM engine) = ~16–20 новых.
+  - Зависимость: ADR-0015 ratified (catalog); US-13 Worker E merge (BPM engine). Если ADR-0015 не ratified — catalog-тесты готовятся в черновой ветке.
 
-- **qa-2 — US-12 Telegram refactor regression**
-  - Файлы: `backend/tests/integrations/test_telegram_adapter_refactor.py` + прогон существующих Telegram-тестов
-  - Покрытие: `test_telegram_dev_env_uses_mock`, совместимость с existing live Telegram-ботом (через mock, конечно), feature-flag dual-routing.
-  - Ориентир: ~5–7 тестов + регрессия.
+- **qa-2 — Agents Status + Notifications + Telegram ACL (US-12, US-14, US-15, US-16)**
+  - Файлы:
+    - `backend/tests/integrations/test_telegram_adapter_refactor.py` + прогон существующих Telegram-тестов
+    - `backend/tests/agents/test_subagent_status.py`
+    - `backend/tests/notifications/test_notifications_idor.py`
+    - `backend/tests/notifications/test_notifications_filters.py`
+    - `backend/tests/integrations/test_telegram_acl_adapter.py`
+  - Покрытие: `test_telegram_dev_env_uses_mock`, mock transport, ACL state routing (§16); polling semantics, role filter owner-only, SQL GROUP BY в /summary, heartbeat header auth, 40+ fixture data (§14); IDOR защита, tab/type/period filter, read-all atomicity, cross-company isolation, channel settings per-user (§15). Добавлено v1.2.
+  - Ориентир: ~5–7 тестов (Telegram) + ~12–15 тестов (Agents) + ~15–18 тестов (Notifications) = ~32–40 новых.
 
 ### Что qa-head делает сам (не делегирует)
 
@@ -459,6 +476,356 @@ quality-director **не пишет тесты сам**. Ниже — план т
 
 ---
 
+---
+
+## 13. Sprint 3 BPM test scenarios (v1.2)
+
+> Секция добавлена qa-head 2026-04-19 (v1.2). Координировать с Worker D (US-12 BPM Admin API) и Worker E (US-13 BPM Engine subscriber): их тесты обязаны покрывать сценарии §13.1–§13.6.
+
+### 13.1. workflow_definition CRUD
+
+Файл: `backend/tests/bpm/test_workflow_definition_crud.py`
+
+| Тест | Класс эквивалентности | Assertion |
+|---|---|---|
+| `test_create_workflow_definition_valid` | Валидный payload: `name`, `steps[]`, `trigger_event` | HTTP 201, `id` в ответе, `version=1`, `status=draft` |
+| `test_create_workflow_missing_steps` | Невалидный: `steps=[]` | HTTP 422, `error.code=VALIDATION_ERROR` (ADR 0005) |
+| `test_get_workflow_definition_own_company` | Получить definition своей компании | HTTP 200, тело соответствует созданному |
+| `test_get_workflow_definition_foreign_company` | Получить definition чужой компании | HTTP 404 (не 403 — не раскрывать существование) |
+| `test_update_workflow_definition_draft` | Обновить definition в статусе `draft` | HTTP 200, `version` не меняется до publish |
+| `test_delete_workflow_definition_draft` | Удалить `draft` | HTTP 204 |
+| `test_delete_workflow_definition_published` | Удалить `published` | HTTP 409, `error.code=WORKFLOW_PUBLISHED` |
+
+**Ориентир: 7 тестов.** Параметризация по ролям (owner / member / guest) добавляется к `test_create` и `test_delete` — проверка RBAC.
+
+### 13.2. Versioning
+
+Файл: `backend/tests/bpm/test_workflow_versioning.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_publish_increments_version` | Publish `draft` → повторный publish после edit | `version` увеличивается на 1 каждый раз |
+| `test_published_definition_immutable` | PUT/PATCH на `published` definition | HTTP 409, `error.code=WORKFLOW_IMMUTABLE` |
+| `test_draft_from_published` | `POST /workflows/{id}/draft` — создать новый draft из published | HTTP 201, новый `id`, `version=prev+1`, `status=draft` |
+| `test_versions_listed_in_order` | GET `/workflows/{id}/versions` | Список упорядочен по `version DESC` |
+| `test_concurrent_publish_idempotent` | Два одновременных `publish` на одном draft (race) | Ровно одна успешная публикация, второй → 409 |
+
+**Ориентир: 5 тестов.**
+
+### 13.3. Seed-шаблоны
+
+Файл: `backend/tests/bpm/test_workflow_seed_templates.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_seed_templates_idempotent` | Запустить seed дважды | Число шаблонов не изменилось, no `IntegrityError` |
+| `test_seed_templates_have_required_fields` | Каждый seed-шаблон | `name`, `trigger_event`, `steps` — не пустые |
+| `test_seed_template_status_is_draft` | Статус всех seed-шаблонов | `status=draft` (шаблоны не публикуются автоматически) |
+
+**Ориентир: 3 теста.**
+
+### 13.4. Event→instance routing
+
+Файл: `backend/tests/bpm/test_bpm_event_routing.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_event_routes_to_matching_workflow` | Публикуем `BusinessEvent` с `trigger_event=payment.created`; опубликован workflow с тем же триггером | Создаётся `workflow_instance` с `workflow_definition_id` = тому workflow |
+| `test_event_no_matching_workflow_ignored` | Публикуем event с триггером без опубликованного workflow | Экземпляр не создаётся; ошибки нет (graceful no-op) |
+| `test_event_routes_to_correct_company_instance` | Два workflow в двух компаниях с одинаковым триггером; event от компании A | Instance создаётся только для компании A |
+| `test_event_does_not_route_to_draft_workflow` | Workflow в статусе `draft` с совпадающим триггером | Instance не создаётся (только published workflows активны) |
+| `test_multiple_events_create_multiple_instances` | Три события с одним триггером | Три независимых `workflow_instance`, не один повторный |
+
+**Ориентир: 5 тестов.** Все используют `mock_business_event_bus` (без живого bus), `in-memory db`.
+
+### 13.5. Step execution (заглушка)
+
+Файл: `backend/tests/bpm/test_bpm_step_execution.py`
+
+> Замечание: Worker E реализует step execution как заглушку в Sprint 3. Тесты проверяют контракт заглушки, а не реальное исполнение.
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_step_execute_stub_returns_pending` | `POST /instances/{id}/steps/{step_id}/execute` | HTTP 200, `status=pending` (заглушка), `result=null` |
+| `test_step_execute_unknown_step` | step_id не принадлежит instance | HTTP 404 |
+| `test_step_execute_foreign_instance` | instance_id чужой компании | HTTP 404 (не 403) |
+| `test_step_status_transition_valid` | `pending → running → completed` через mock stub | Каждый переход возвращает корректный `status` |
+| `test_step_status_transition_invalid` | `completed → running` (откат назад) | HTTP 409, `error.code=INVALID_STEP_TRANSITION` |
+
+**Ориентир: 5 тестов.**
+
+### 13.6. Archive/restore idempotency
+
+Файл: `backend/tests/bpm/test_bpm_archive_restore.py`
+
+| Тест | Класс эквивалентности | Assertion |
+|---|---|---|
+| `test_archive_published_workflow` | Валидный: опубликованный workflow | HTTP 200, `status=archived`; новые instances не создаются |
+| `test_archive_draft_workflow` | Граничный: draft (не published) | HTTP 409 или HTTP 200 в зависимости от бизнес-правила — qa-1 уточняет у Worker D |
+| `test_archive_already_archived_idempotent` | Двойной archive | HTTP 200 (idempotent), `status=archived`, не ошибка |
+| `test_restore_archived_workflow` | Restore archived → published | HTTP 200, `status=published` |
+| `test_restore_already_published_idempotent` | Двойной restore | HTTP 200 (idempotent), `status=published` |
+| `test_archive_blocks_new_event_routing` | После archive: event с триггером этого workflow | Instance не создаётся (archived не активен) |
+
+**Ориентир: 6 тестов.**
+
+**Итого §13 (BPM): 31 тест** (7 CRUD + 5 versioning + 3 seed + 5 routing + 5 step execution + 6 archive/restore).
+
+---
+
+## 14. Subagent Status test scenarios (v1.2)
+
+> Секция добавлена qa-head 2026-04-19 (v1.2). US-14 реализована в Волне A (ed792ed). Тесты пишет qa-2. Ключевые риски: SQL GROUP BY некорректный → /summary врёт; role filter — утечка данных между ролями.
+
+### 14.1. Polling semantics
+
+Файл: `backend/tests/agents/test_subagent_status_polling.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_status_returns_latest_heartbeat` | Агент отправил 3 heartbeat с интервалом; GET `/status/{id}` | Возвращается последний heartbeat, `last_seen` актуален |
+| `test_status_stale_after_timeout` | Агент не отправлял heartbeat > threshold | `status=offline` или `status=stale` (уточнить у Worker F) |
+| `test_status_online_after_heartbeat` | Агент был stale → отправил heartbeat | `status=online` |
+| `test_status_unknown_agent` | `GET /status/{unknown_id}` | HTTP 404 |
+| `test_polling_no_thundering_herd` | 10 параллельных GET запросов к /status/{id} | Все 10 возвращают одинаковый результат; БД не блокируется (проверяется через spy на `db_session.execute`) |
+
+**Ориентир: 5 тестов.**
+
+### 14.2. Role filter (owner-only)
+
+Файл: `backend/tests/agents/test_subagent_status_rbac.py`
+
+Матрица параметризованная через `pytest.mark.parametrize(("role", "expected_status"), [...])`:
+
+| Роль | GET /status/{id} | GET /summary | Ожидание |
+|---|---|---|---|
+| `owner` | Свой агент | Своя компания | HTTP 200 |
+| `owner` | Чужой агент (другой компании) | Другая компания | HTTP 404 |
+| `manager` | Любой агент | — | HTTP 403 |
+| `accountant` | Любой агент | — | HTTP 403 |
+| `guest` | Любой агент | — | HTTP 403 |
+
+| Тест | Assertion |
+|---|---|
+| `test_owner_sees_own_agents` | HTTP 200, данные совпадают |
+| `test_owner_cannot_see_foreign_company_agents` | HTTP 404 |
+| `test_non_owner_roles_forbidden` | HTTP 403 для всех ролей кроме owner (параметризованный тест) |
+| `test_unauthenticated_blocked` | HTTP 401 |
+
+**Ориентир: 4 теста** (один параметризованный = 3 sub-кейса).
+
+### 14.3. SQL GROUP BY в /summary
+
+Файл: `backend/tests/agents/test_subagent_summary.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_summary_counts_by_status` | 40+ фикстурных агентов: 15 online, 12 offline, 8 stale, 5 error | `summary.online==15`, `summary.offline==12`, `summary.stale==8`, `summary.error==5` (точные значения) |
+| `test_summary_empty_company` | Компания без агентов | `{online:0, offline:0, stale:0, error:0}` — не пустой ответ |
+| `test_summary_isolation_between_companies` | Компания A — 10 агентов, компания B — 20 агентов; запрос от A | `total=10` (не 30) |
+| `test_summary_uses_sql_groupby_not_python` | Spy на `db_session.execute` | SQL содержит `GROUP BY status`; постобработки в Python нет (антипаттерн из CLAUDE.md) |
+| `test_summary_total_equals_sum_of_statuses` | Произвольное распределение статусов | `total == online + offline + stale + error` всегда |
+
+**Ориентир: 5 тестов.** Фикстура `fixture_40_agents(company_id, statuses_distribution)` — одна на все тесты §14.3, генерирует агентов случайными секретами (CLAUDE.md правило секретов).
+
+### 14.4. Heartbeat header auth
+
+Файл: `backend/tests/agents/test_subagent_heartbeat.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_heartbeat_valid_token` | `POST /heartbeat` с корректным `X-Agent-Token` | HTTP 204, `last_seen` обновлён |
+| `test_heartbeat_invalid_token` | Неверный `X-Agent-Token` | HTTP 401 |
+| `test_heartbeat_missing_token` | Нет заголовка | HTTP 401 |
+| `test_heartbeat_expired_token` | Истёкший `X-Agent-Token` | HTTP 401 |
+| `test_heartbeat_wrong_company_token` | Токен агента компании B на POST агента компании A | HTTP 403 или HTTP 404 (уточнить у Worker F) |
+| `test_heartbeat_updates_status_to_online` | Агент был stale; POST heartbeat | `GET /status/{id}` → `status=online` |
+
+**Ориентир: 6 тестов.**
+
+**Итого §14 (Subagent Status): 20 тестов** (5 polling + 4 RBAC + 5 summary + 6 heartbeat).
+
+---
+
+## 15. Notifications test scenarios (v1.2)
+
+> Секция добавлена qa-head 2026-04-19 (v1.2). US-15 реализована в Волне A (0537217). Тесты пишет qa-2. Критические риски: IDOR (P0), cross-company isolation (P0), atomicity read-all (P1).
+
+### 15.1. IDOR защита (critical)
+
+Файл: `backend/tests/notifications/test_notifications_idor.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_get_notification_own` | GET `/notifications/{id}` — своё уведомление | HTTP 200 |
+| `test_get_notification_foreign_user_same_company` | GET `/notifications/{id}` — уведомление другого пользователя той же компании | HTTP 404 (не 403) |
+| `test_get_notification_foreign_company` | GET `/notifications/{id}` — уведомление пользователя другой компании | HTTP 404 |
+| `test_mark_read_foreign_notification` | PATCH `/notifications/{id}/read` чужого уведомления | HTTP 404 |
+| `test_delete_foreign_notification` | DELETE `/notifications/{id}` чужого | HTTP 404 |
+| `test_idor_sequential_ids_not_guessable` | Попытка перебора id+1, id+2 для чужих уведомлений | Каждый → HTTP 404 (параметризованный диапазон 10 id) |
+
+**Ориентир: 6 тестов** (последний даёт 10 sub-кейсов). Все IDOR-тесты помечаются `@pytest.mark.security`.
+
+### 15.2. Filter в SQL (tab/type/period)
+
+Файл: `backend/tests/notifications/test_notifications_filters.py`
+
+| Тест | Фильтр | Assertion |
+|---|---|---|
+| `test_filter_by_tab_unread` | `?tab=unread` | Только уведомления с `read=False` |
+| `test_filter_by_tab_read` | `?tab=read` | Только уведомления с `read=True` |
+| `test_filter_by_type` | `?type=payment_alert` | Только нотификации данного типа |
+| `test_filter_combined_tab_type` | `?tab=unread&type=payment_alert` | Пересечение двух условий |
+| `test_filter_period_today` | `?period=today` | `created_at >= today_start`, `< tomorrow_start` |
+| `test_filter_period_week` | `?period=week` | `created_at >= 7 дней назад` |
+| `test_filter_period_invalid` | `?period=yesterday_invalid` | HTTP 422, `error.code=VALIDATION_ERROR` |
+| `test_filter_uses_sql_where_not_python` | Spy на `db_session.execute` при `?tab=unread` | SQL содержит `WHERE read = false`; postprocessing в Python отсутствует (антипаттерн CLAUDE.md) |
+| `test_pagination_with_filter` | `?tab=unread&limit=5&offset=5` | `total` = число unread всего, `items` = 5 элементы; `total` из COUNT с тем же WHERE (не постобработка) |
+
+**Ориентир: 9 тестов.**
+
+### 15.3. Read-all atomicity
+
+Файл: `backend/tests/notifications/test_notifications_read_all.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_mark_all_read_marks_all` | 20 непрочитанных; `POST /notifications/read-all` | Все 20 → `read=True`; `GET ?tab=unread` возвращает 0 |
+| `test_mark_all_read_idempotent` | Двойной вызов `read-all` | Второй вызов → HTTP 200 (или 204), не ошибка; count остаётся 0 |
+| `test_mark_all_read_concurrent` | 5 параллельных `read-all` через `asyncio.gather` | После завершения `?tab=unread` = 0; нет дубликатов записей аудита |
+| `test_mark_all_read_only_own_user` | Пользователь A — `read-all`; у пользователя B той же компании остаются непрочитанные | Уведомления B не затронуты |
+| `test_mark_all_read_audit_log` | `POST /notifications/read-all` | В `audit_log` запись `notifications_read_all` с `user_id` и `count` прочитанных (ADR 0007) |
+
+**Ориентир: 5 тестов.**
+
+### 15.4. Cross-company isolation
+
+Файл: `backend/tests/notifications/test_notifications_isolation.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_list_shows_only_own_company` | Компания A — 10 уведомлений, компания B — 15; GET `/notifications` от A | `total=10` (не 25) |
+| `test_create_notification_for_foreign_user` | POST уведомление с `user_id` из другой компании | HTTP 404 или 403 (пользователь не найден в scope компании) |
+| `test_notification_event_does_not_leak_cross_company` | BPM notification event от компании A; пользователь компании B слушает | Пользователь B не получает уведомление |
+
+**Ориентир: 3 теста.**
+
+### 15.5. Channel settings per-user
+
+Файл: `backend/tests/notifications/test_notification_channel_settings.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_get_channel_settings_default` | Новый пользователь без настроек | Возвращаются default-значения (email=true, telegram=false или согласно spec) |
+| `test_update_channel_settings` | PATCH `/notifications/settings` → `{telegram: true}` | HTTP 200, последующий GET возвращает `telegram=true` |
+| `test_channel_settings_per_user_isolated` | Пользователь A отключает email; GET настроек пользователя B | Настройки B не изменились |
+| `test_notification_respects_channel_disabled` | Пользователь отключил `telegram`; BPM генерирует уведомление | В `notification_deliveries` запись для telegram отсутствует |
+
+**Ориентир: 4 теста.**
+
+**Итого §15 (Notifications): 27 тестов** (6 IDOR + 9 filters + 5 read-all + 3 isolation + 4 channel settings).
+
+---
+
+## 16. Telegram adapter test scenarios (v1.2)
+
+> Секция добавлена qa-head 2026-04-19 (v1.2). US-16 реализована Worker F (в работе, Волна B). Тесты пишет qa-2. Зависимость: Worker F merge US-16. Живые вызовы запрещены в dev (CODE_OF_LAWS ст. 45а/45б, CLAUDE.md).
+
+### 16.1. ACL states matrix
+
+Файл: `backend/tests/integrations/test_telegram_acl_adapter.py`
+
+Параметризованная матрица через `pytest.mark.parametrize(("acl_state", "app_env", "expected"), [...])`:
+
+| case | acl_state | APP_ENV | Ожидание | Assertion |
+|---|---|---|---|---|
+| 1 | `written` | `dev` | `AdapterDisabledError` | `pytest.raises(AdapterDisabledError)` |
+| 2 | `written` | `production` | `AdapterDisabledError` | `pytest.raises(AdapterDisabledError)` |
+| 3 | `enabled_mock` | `dev` | `_mock_transport` вызван | `spy_mock.called == True`, `spy_live.called == False` |
+| 4 | `enabled_mock` | `production` | `_mock_transport` вызван (mock не зависит от env) | `spy_mock.called == True` |
+| 5 | `enabled_live` | `dev` | `AdapterDisabledError("live disabled in dev")` | `pytest.raises(AdapterDisabledError, match="live disabled in dev")` |
+| 6 | `enabled_live` | `production` | `_live_transport` вызван | `spy_live.called == True`; `@pytest.mark.allow_network` не ставится — используется mock-транспортный слой |
+
+**Ориентир: 6 тестов** (параметризованный = 6 test-id).
+
+### 16.2. Mock transport
+
+Файл: `backend/tests/integrations/test_telegram_mock_transport.py`
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_mock_transport_returns_success` | `TelegramAdapter.send_message(...)` при `enabled_mock` | Возвращает `MessageSentResult(success=True, message_id=<fake_id>)` |
+| `test_mock_transport_records_call` | Вызов mock-transport | В `spy_mock_calls` фиксируется `chat_id`, `text`, `timestamp` |
+| `test_mock_transport_raises_on_bad_payload` | `send_message` с пустым `text` | `pytest.raises(ValidationError)` до вызова транспорта |
+| `test_mock_transport_configurable_failure` | `MockTransport(fail=True)` | `pytest.raises(IntegrationCallError)` — симуляция сбоя Telegram API |
+| `test_mock_transport_latency_recorded` | `call()` с mock | `audit_log` содержит `latency_ms > 0` и `adapter_name="telegram"` |
+
+**Ориентир: 5 тестов.**
+
+### 16.3. Live запрет в dev
+
+Файл: `backend/tests/integrations/test_telegram_acl_adapter.py` (продолжение)
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_live_blocked_without_allow_network_marker` | `enabled_live` + `APP_ENV=production` в обычном тесте (без `@pytest.mark.allow_network`) | `SocketBlockedError` от `pytest-socket` autouse |
+| `test_live_blocked_in_dev_env` | `enabled_live` + `APP_ENV=dev` | `AdapterDisabledError` до любого сетевого вызова (guard срабатывает раньше socket) |
+| `test_no_hardcoded_telegram_urls` | Grep по `backend/app/integrations/telegram*.py` на `api.telegram.org` вне `_live_transport` | `matches == []` |
+
+**Ориентир: 3 теста.**
+
+### 16.4. BPM notification delivery flow
+
+Файл: `backend/tests/integrations/test_telegram_bpm_delivery.py`
+
+> Интеграционный тест связки BPM notification event → Telegram adapter. Использует mock transport; не требует живого Telegram.
+
+| Тест | Сценарий | Assertion |
+|---|---|---|
+| `test_bpm_notification_delivered_via_telegram` | `workflow_instance` завершает шаг → BPM публикует `NotificationEvent` → Notifications сервис → Telegram adapter (mock) | `spy_mock_transport.called == True`; `chat_id` совпадает с `user.telegram_chat_id` |
+| `test_bpm_notification_skipped_if_telegram_disabled` | Пользователь отключил `telegram` в channel settings; тот же flow | `spy_mock_transport.called == False`; в `notification_deliveries` статус `skipped` |
+| `test_bpm_notification_delivery_audit_logged` | Успешная доставка | `audit_log` содержит `notification_delivered` с `channel=telegram`, `user_id`, `success=True` |
+| `test_bpm_notification_delivery_failure_logged` | Mock transport выбрасывает `IntegrationCallError` | `audit_log` содержит `notification_delivered` с `success=False`; уведомление в БД сохраняется (не теряется) |
+| `test_bpm_notification_no_cross_company_delivery` | Notification event от компании A; пользователь компании B имеет telegram настроен | Mock transport вызван только для пользователей компании A |
+
+**Ориентир: 5 тестов.**
+
+**Итого §16 (Telegram adapter): 19 тестов** (6 ACL states + 5 mock transport + 3 live-запрет + 5 BPM delivery flow).
+
+---
+
+### Сводная таблица новых тестов Sprint 3 (v1.2)
+
+| Секция | Файл | Тестов | qa-исполнитель |
+|---|---|---|---|
+| BPM CRUD (§13.1) | `tests/bpm/test_workflow_definition_crud.py` | 7 | qa-1 |
+| BPM versioning (§13.2) | `tests/bpm/test_workflow_versioning.py` | 5 | qa-1 |
+| BPM seed templates (§13.3) | `tests/bpm/test_workflow_seed_templates.py` | 3 | qa-1 |
+| BPM event routing (§13.4) | `tests/bpm/test_bpm_event_routing.py` | 5 | qa-1 |
+| BPM step execution (§13.5) | `tests/bpm/test_bpm_step_execution.py` | 5 | qa-1 |
+| BPM archive/restore (§13.6) | `tests/bpm/test_bpm_archive_restore.py` | 6 | qa-1 |
+| Subagent polling (§14.1) | `tests/agents/test_subagent_status_polling.py` | 5 | qa-2 |
+| Subagent RBAC (§14.2) | `tests/agents/test_subagent_status_rbac.py` | 4 | qa-2 |
+| Subagent summary SQL (§14.3) | `tests/agents/test_subagent_summary.py` | 5 | qa-2 |
+| Subagent heartbeat (§14.4) | `tests/agents/test_subagent_heartbeat.py` | 6 | qa-2 |
+| Notifications IDOR (§15.1) | `tests/notifications/test_notifications_idor.py` | 6 | qa-2 |
+| Notifications filters (§15.2) | `tests/notifications/test_notifications_filters.py` | 9 | qa-2 |
+| Notifications read-all (§15.3) | `tests/notifications/test_notifications_read_all.py` | 5 | qa-2 |
+| Notifications isolation (§15.4) | `tests/notifications/test_notifications_isolation.py` | 3 | qa-2 |
+| Notifications channel settings (§15.5) | `tests/notifications/test_notification_channel_settings.py` | 4 | qa-2 |
+| Telegram ACL states (§16.1) | `tests/integrations/test_telegram_acl_adapter.py` | 6 | qa-2 |
+| Telegram mock transport (§16.2) | `tests/integrations/test_telegram_mock_transport.py` | 5 | qa-2 |
+| Telegram live-запрет (§16.3) | `tests/integrations/test_telegram_acl_adapter.py` | 3 | qa-2 |
+| Telegram BPM delivery (§16.4) | `tests/integrations/test_telegram_bpm_delivery.py` | 5 | qa-2 |
+| Integration catalog (Sprint 3 §7) | `tests/integrations/test_integration_catalog_*.py` | 7 | qa-1 |
+| **Итого Sprint 3 новых** | | **104 теста** | |
+
+**Ориентир итогового count после Sprint 3:** 351 (regression) + ~20–25 (Sprint 1) + 31 (Sprint 2) + 104 (Sprint 3) = ~506–511 тестов.
+
+---
+
 *Документ составлен quality-director (субагент L2) 2026-04-18. Не является ADR. Операционный план тестирования под-фазы. Коммит — за Координатором. Активация qa-head — за Координатором.*
 
 *v1.1 расширен qa-head (субагент L3) 2026-04-19: добавлены §12.1 (bus isolation), §12.2 (adapter state matrix), §12.3 (pod-boundary contracts), §12.4 (сводная таблица); обновлены §3 (coverage targets), §4 Sprint 2 gate (пп. 13–15), §7 (делегирование qa-1/qa-2), §11 (правила 14–15). ri-analyst dormant, proceeded without.*
+
+*v1.2 расширен qa-head (субагент L3) 2026-04-19: добавлены §13 (BPM test scenarios, 31 тест), §14 (Subagent Status test scenarios, 20 тестов), §15 (Notifications test scenarios, 27 тестов), §16 (Telegram adapter test scenarios, 19 тестов), сводная таблица Sprint 3 (104 теста итого); обновлены §3 (coverage targets Sprint 3 — 6 новых строк), §4 Sprint 3 gate (gate 16 bpm-gate + gate 17 notifications-idor-gate, итого 17 gates), §7 делегирование Sprint 3 (qa-1 берёт BPM engine + catalog; qa-2 берёт Agents+Notifications+Telegram).*

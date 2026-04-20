@@ -470,8 +470,72 @@ docs/pods/cottage-platform/infrastructure/pitr-drill-YYYY-MM-DD.md
 
 ---
 
+---
+
+## Создание базового бэкапа (автоматическое)
+
+Скрипт `infra/backups/pg_basebackup_weekly.sh` запускается автоматически каждое воскресенье в 02:00 MSK
+через `/etc/cron.d/coordinata56-pitr`.
+
+### Что происходит при запуске
+
+1. Скрипт считывает `WAL_ARCHIVE_MODE` из `/etc/coordinata56/wal.env`.
+2. При `WAL_ARCHIVE_MODE=s3` — выполняет `pg_basebackup -D - -Ft -X fetch -z` внутри контейнера
+   и передаёт поток через pipe в `aws s3 cp - s3://coordinata56-wal/basebackup/YYYY-MM-DD/base.tar.gz`.
+3. При `WAL_ARCHIVE_MODE=local` — сохраняет в `/var/backups/coordinata56/basebackup/YYYY-MM-DD/base.tar.gz`.
+4. После успеха обновляет `/var/backups/coordinata56/.last_basebackup_success` (ISO-8601 UTC timestamp).
+   Этот файл читается Prometheus postgres_exporter для метрики `pg_basebackup_age_seconds`.
+
+### Проверка успешного выполнения
+
+```bash
+# Дата последнего успешного бэкапа
+cat /var/backups/coordinata56/.last_basebackup_success
+
+# Лог последнего запуска
+tail -20 /var/log/coordinata56-basebackup.log
+
+# Проверить наличие арtefакта в S3 (при WAL_ARCHIVE_MODE=s3)
+aws s3 ls s3://coordinata56-wal/basebackup/ \
+    --endpoint-url=https://storage.yandexcloud.net \
+    --recursive | sort | tail -5
+```
+
+### Ручной запуск (тест / внеплановый бэкап)
+
+```bash
+# Запускать от root
+/root/coordinata56/infra/backups/pg_basebackup_weekly.sh
+# Ожидаемый вывод: "OK: basebackup загружен в S3 — s3://coordinata56-wal/basebackup/YYYY-MM-DD/base.tar.gz"
+```
+
+### Retention (хранение) — только вручную
+
+Автоматическое удаление старых базовых бэкапов **не реализовано** — умышленно, для safety.
+
+Рекомендации:
+- Хранить минимум 4 бэкапа (4 воскресенья = 28 дней).
+- Удалять вручную через консоль Яндекс Cloud или:
+  ```bash
+  # Пример: удалить бэкапы старше 5 недель (35 дней) — выполнять только осознанно
+  CUTOFF=$(date -d '35 days ago' +%Y-%m-%d)
+  aws s3 ls s3://coordinata56-wal/basebackup/ --endpoint-url=https://storage.yandexcloud.net \
+      | awk '{print $2}' | while read dir; do
+      week="${dir%/}"
+      [[ "${week}" < "${CUTOFF}" ]] && \
+          aws s3 rm "s3://coordinata56-wal/basebackup/${dir}" \
+              --recursive --endpoint-url=https://storage.yandexcloud.net && \
+          echo "Удалён: ${dir}"
+  done
+  ```
+- Перед удалением убедиться что следующий бэкап уже есть и он свежий.
+
+---
+
 ## Связанные документы
 
 - `infra/backups/README.md` — настройка WAL-архивации
 - `infra/backups/wal_archive.sh` — скрипт архивации WAL
+- `infra/backups/pg_basebackup_weekly.sh` — скрипт еженедельного базового бэкапа
+- `/etc/cron.d/coordinata56-pitr` — расписание cron
 - `docs/pods/cottage-platform/infrastructure/backup-policy.md` — политика, RTO/RPO
