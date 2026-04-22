@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-OS · All Screens · Wave 1</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #111b2e;
+    --fg: #e5e7eb;
+    --fg-muted: #9ca3af;
+    --accent: #60a5fa;
+    --border: #1f2a44;
+    --frame-w: 1440px;
+    --frame-h: 900px;
+    --scale: 0.5;
+    --scaled-w: calc(var(--frame-w) * var(--scale));
+    --scaled-h: calc(var(--frame-h) * var(--scale));
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 24px 20px 80px;
+    line-height: 1.5;
+  }
+  header {
+    max-width: 1600px; margin: 0 auto 24px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  }
+  h1 {
+    margin: 0 0 6px; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
+  }
+  .sub { color: var(--fg-muted); font-size: 13px; }
+  .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; text-decoration: none;
+    border: 1px solid var(--border); color: var(--fg-muted);
+    background: var(--panel);
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .btn:hover { color: var(--fg); border-color: var(--accent); }
+  .btn-primary { background: var(--accent); color: #0b1220; border-color: var(--accent); }
+  .btn-primary:hover { background: #93c5fd; color: #0b1220; }
+
+  .scale-control {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 12px; color: var(--fg-muted);
+  }
+  .scale-control input[type="range"] { accent-color: var(--accent); }
+
+  .flow-title {
+    max-width: 1600px; margin: 32px auto 14px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--fg-muted); font-weight: 600;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .flow-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .grid {
+    max-width: 1600px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--scaled-w), 1fr));
+    gap: 24px;
+  }
+  .tile {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .tile-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .tile-head .title {
+    font-size: 14px; font-weight: 600; margin: 0;
+  }
+  .tile-head .num {
+    display: inline-block; font-size: 10px; color: var(--fg-muted);
+    letter-spacing: .08em; margin-right: 8px; font-weight: 500;
+  }
+  .tile-head .open {
+    font-size: 12px; color: var(--accent); text-decoration: none;
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+  }
+  .tile-head .open:hover { background: var(--accent); color: #0b1220; border-color: var(--accent); }
+
+  .tile-frame-wrap {
+    width: var(--scaled-w);
+    height: var(--scaled-h);
+    overflow: hidden;
+    position: relative;
+    background: #000;
+  }
+  .tile-frame-wrap iframe {
+    width: var(--frame-w);
+    height: var(--frame-h);
+    border: 0;
+    transform: scale(var(--scale));
+    transform-origin: 0 0;
+    display: block;
+  }
+
+  .hint {
+    max-width: 1600px; margin: 16px auto 0;
+    font-size: 12px; color: var(--fg-muted);
+    padding: 10px 14px; border: 1px dashed var(--border); border-radius: 8px;
+  }
+
+  footer {
+    max-width: 1600px; margin: 48px auto 0;
+    padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--fg-muted);
+  }
+  footer a { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>M-OS · Все экраны · Wave 1</h1>
+    <div class="sub">Общий вид: все 12 сгенерированных экранов M-OS-1.1A на одной странице. Масштаб настраивается ползунком.</div>
+  </div>
+  <div class="nav-links">
+    <a class="btn" href="./">← Карточки</a>
+    <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6" target="_blank" rel="noopener">Subframe проект</a>
+  </div>
+</header>
+
+<div class="scale-control" style="max-width:1600px;margin:0 auto 18px;">
+  Масштаб плиток:
+  <input id="scaleRange" type="range" min="0.25" max="1.0" step="0.05" value="0.5">
+  <span id="scaleValue">50%</span>
+  &nbsp;·&nbsp;<span style="color:var(--fg-muted);">iframe — живые страницы Subframe, клик «Открыть» → полноразмерный холст.</span>
+</div>
+
+<div class="hint">
+  Если какая-то плитка показывает пустой экран или сообщение о запрете встраивания —
+  у Subframe для этой страницы включена защита. Нажмите «Открыть» в заголовке плитки,
+  чтобы открыть страницу в отдельной вкладке.
+</div>
+
+<!-- AUTHENTICATION -->
+<div class="flow-title">Authentication</div>
+<div class="grid">
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">01 · AUTH</span><span class="title">Страница входа</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/521a8f48-a108-49d9-8cae-17c241bed004">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/521a8f48-a108-49d9-8cae-17c241bed004"></iframe></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="flow-title">Admin</div>
+<div class="grid">
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">02 · ADMIN</span><span class="title">Список компаний</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/5157df19-b218-4709-b1fe-db070426e02e">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/5157df19-b218-4709-b1fe-db070426e02e"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">03 · ADMIN</span><span class="title">Компания (создание/редактирование)</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/a143bc10-42ff-4a3a-9aac-df7c4ca06499">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/a143bc10-42ff-4a3a-9aac-df7c4ca06499"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">04 · ADMIN</span><span class="title">Список пользователей</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/fc620855-e36e-4928-acfa-63f771723eb4">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/fc620855-e36e-4928-acfa-63f771723eb4"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">05 · ADMIN</span><span class="title">Карточка пользователя</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/741a798b-ade2-4708-95b2-a027f43e126e">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/741a798b-ade2-4708-95b2-a027f43e126e"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">06 · ADMIN</span><span class="title">Роли</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/01e1eabb-a479-4fb3-96ff-f9b4cc1302ba">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/01e1eabb-a479-4fb3-96ff-f9b4cc1302ba"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">07 · ADMIN</span><span class="title">Матрица прав</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/9c91aeef-96db-4049-846d-25b5ab88db51">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/9c91aeef-96db-4049-846d-25b5ab88db51"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">08 · ADMIN</span><span class="title">Настройки компании</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/f5c1b01f-ed11-46fe-8725-abee064ee6fd">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/f5c1b01f-ed11-46fe-8725-abee064ee6fd"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">09 · ADMIN</span><span class="title">Интеграции</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/d5d9850d-857d-4c7f-b0aa-c001f3a7e765">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/d5d9850d-857d-4c7f-b0aa-c001f3a7e765"></iframe></div>
+  </div>
+</div>
+
+<!-- BPM -->
+<div class="flow-title">BPM</div>
+<div class="grid">
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">10 · BPM</span><span class="title">Шаблоны процессов</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/8ea0cfc3-fa59-472a-9c2f-0d39399ae39f">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/8ea0cfc3-fa59-472a-9c2f-0d39399ae39f"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">11 · BPM</span><span class="title">Каналы уведомлений</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/4c0302b3-3f81-4f4c-9d2e-5a6e66735b50">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/4c0302b3-3f81-4f4c-9d2e-5a6e66735b50"></iframe></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head">
+      <div><span class="num">12 · BPM</span><span class="title">Журнал аудита</span></div>
+      <a class="open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/71563863-eb43-4b48-bb63-de47f516dc16">Открыть ↗</a>
+    </div>
+    <div class="tile-frame-wrap"><iframe loading="lazy" src="https://app.subframe.com/aeedf49f14a6/mcp/71563863-eb43-4b48-bb63-de47f516dc16"></iframe></div>
+  </div>
+</div>
+
+<footer>
+  M-OS · Координата 56 — Wave 1 combined view ·
+  <a href="./">Вид карточками</a> ·
+  <a href="https://app.subframe.com/aeedf49f14a6" target="_blank" rel="noopener">Subframe project</a> ·
+  <a href="https://github.com/m-creator-holding/coordinata56-docs" target="_blank" rel="noopener">Docs mirror</a>
+</footer>
+
+<script>
+  const range = document.getElementById('scaleRange');
+  const label = document.getElementById('scaleValue');
+  const root = document.documentElement;
+  range.addEventListener('input', () => {
+    const v = parseFloat(range.value);
+    root.style.setProperty('--scale', v);
+    label.textContent = Math.round(v * 100) + '%';
+  });
+</script>
+
+</body>
+</html>
