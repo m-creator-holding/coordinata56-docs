@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M-OS · Design Gallery · Wave 1</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #111b2e;
+    --panel-hover: #162340;
+    --fg: #e5e7eb;
+    --fg-muted: #9ca3af;
+    --accent: #60a5fa;
+    --border: #1f2a44;
+    --shadow: 0 4px 24px rgba(0,0,0,.25);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', Segoe UI, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    min-height: 100vh;
+    padding: 32px 20px 64px;
+    line-height: 1.5;
+  }
+  header {
+    max-width: 1200px; margin: 0 auto 32px;
+    padding-bottom: 20px; border-bottom: 1px solid var(--border);
+  }
+  h1 {
+    margin: 0 0 8px; font-size: 28px; font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .sub { color: var(--fg-muted); font-size: 14px; }
+  .meta { margin-top: 12px; font-size: 13px; color: var(--fg-muted); }
+  .meta b { color: var(--fg); font-weight: 500; }
+  .flow-group {
+    max-width: 1200px; margin: 0 auto 40px;
+  }
+  .flow-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--fg-muted); font-weight: 600; margin: 0 0 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .flow-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: background .15s, transform .15s, border-color .15s;
+    display: flex; flex-direction: column; gap: 12px;
+    min-height: 160px;
+  }
+  .card:hover { background: var(--panel-hover); border-color: var(--accent); transform: translateY(-2px); }
+  .card-num {
+    font-size: 11px; color: var(--fg-muted); font-weight: 500;
+    letter-spacing: .05em;
+  }
+  .card-title {
+    font-size: 17px; font-weight: 600; margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .card-desc {
+    font-size: 13px; color: var(--fg-muted); margin: 0; flex: 1;
+  }
+  .card-actions {
+    display: flex; gap: 8px; margin-top: 8px;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; text-decoration: none;
+    transition: background .15s, color .15s;
+    cursor: pointer; border: none; font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--accent); color: #0b1220;
+    flex: 1;
+  }
+  .btn-primary:hover { background: #93c5fd; }
+  .btn-ghost {
+    background: transparent; color: var(--fg-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--fg); border-color: var(--fg-muted); }
+  .copy-hint {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent); color: #0b1220;
+    padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    opacity: 0; transition: opacity .2s, transform .2s;
+    pointer-events: none; z-index: 999;
+  }
+  .copy-hint.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  footer {
+    max-width: 1200px; margin: 48px auto 0;
+    padding-top: 20px; border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--fg-muted);
+  }
+  footer a { color: var(--fg-muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>M-OS · Design Gallery · Wave 1</h1>
+  <div class="sub">Все сгенерированные экраны M-OS-1.1A в одном месте. Нажмите карточку — откроется интерактивный холст в Subframe (редактирование через Design Mode).</div>
+  <div class="meta">
+    <b>Дата генерации:</b> 2026-04-22 ·
+    <b>Экранов:</b> 12 ·
+    <b>Viewport:</b> Desktop 1440×900 ·
+    <b>Вариаций на экран:</b> 2
+  </div>
+</header>
+
+<section class="flow-group">
+  <h2 class="flow-title">Authentication</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="card-num">01 · AUTH</span>
+      <h3 class="card-title">Страница входа (Desktop v2)</h3>
+      <p class="card-desc">Вход по email и паролю. Два варианта: Split brand left / Full-width centered.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/521a8f48-a108-49d9-8cae-17c241bed004" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/521a8f48-a108-49d9-8cae-17c241bed004')">⧉</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="flow-group">
+  <h2 class="flow-title">Admin</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="card-num">02 · ADMIN</span>
+      <h3 class="card-title">Список компаний</h3>
+      <p class="card-desc">Таблица всех юрлиц холдинга. Поиск, фильтры, статусы, пагинация. Кнопка создания.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/5157df19-b218-4709-b1fe-db070426e02e" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/5157df19-b218-4709-b1fe-db070426e02e')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">03 · ADMIN</span>
+      <h3 class="card-title">Компания (создание / редактирование)</h3>
+      <p class="card-desc">Форма карточки юрлица: реквизиты, банковские счета, настройки.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/a143bc10-42ff-4a3a-9aac-df7c4ca06499" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/a143bc10-42ff-4a3a-9aac-df7c4ca06499')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">04 · ADMIN</span>
+      <h3 class="card-title">Список пользователей</h3>
+      <p class="card-desc">Сотрудники холдинга с их ролями, компаниями, статусом активности.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/fc620855-e36e-4928-acfa-63f771723eb4" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/fc620855-e36e-4928-acfa-63f771723eb4')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">05 · ADMIN</span>
+      <h3 class="card-title">Карточка пользователя</h3>
+      <p class="card-desc">Профиль сотрудника, назначенные роли, история действий, настройки доступа.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/741a798b-ade2-4708-95b2-a027f43e126e" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/741a798b-ade2-4708-95b2-a027f43e126e')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">06 · ADMIN</span>
+      <h3 class="card-title">Роли</h3>
+      <p class="card-desc">Шаблоны ролей с правами. Создание, редактирование, клонирование.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/01e1eabb-a479-4fb3-96ff-f9b4cc1302ba" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/01e1eabb-a479-4fb3-96ff-f9b4cc1302ba')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">07 · ADMIN</span>
+      <h3 class="card-title">Матрица прав</h3>
+      <p class="card-desc">Визуальная матрица «роль × ресурс» для настройки RBAC по галочкам.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/9c91aeef-96db-4049-846d-25b5ab88db51" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/9c91aeef-96db-4049-846d-25b5ab88db51')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">08 · ADMIN</span>
+      <h3 class="card-title">Настройки компании</h3>
+      <p class="card-desc">Глобальные параметры компании: лимиты, фискальные данные, реквизиты, политика сроков.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/f5c1b01f-ed11-46fe-8725-abee064ee6fd" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/f5c1b01f-ed11-46fe-8725-abee064ee6fd')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">09 · ADMIN</span>
+      <h3 class="card-title">Интеграции</h3>
+      <p class="card-desc">Каталог внешних систем: банки, 1С, ОФД, Росреестр. Статусы подключения, ключи.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/d5d9850d-857d-4c7f-b0aa-c001f3a7e765" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/d5d9850d-857d-4c7f-b0aa-c001f3a7e765')">⧉</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="flow-group">
+  <h2 class="flow-title">BPM</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="card-num">10 · BPM</span>
+      <h3 class="card-title">Шаблоны процессов</h3>
+      <p class="card-desc">Список шаблонов BPM: согласование оплат, приёмки работ, создание договоров. Версии, статусы.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/8ea0cfc3-fa59-472a-9c2f-0d39399ae39f" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/8ea0cfc3-fa59-472a-9c2f-0d39399ae39f')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">11 · BPM</span>
+      <h3 class="card-title">Каналы уведомлений</h3>
+      <p class="card-desc">Настройка per-event каналов: Telegram (единственный живой), Email, SMS (disabled до production).</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/4c0302b3-3f81-4f4c-9d2e-5a6e66735b50" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/4c0302b3-3f81-4f4c-9d2e-5a6e66735b50')">⧉</button>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-num">12 · BPM</span>
+      <h3 class="card-title">Журнал аудита</h3>
+      <p class="card-desc">Просмотр крипто-цепочки аудита. Фильтр по actor, событию, объекту, дате.</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" href="https://app.subframe.com/aeedf49f14a6/mcp/71563863-eb43-4b48-bb63-de47f516dc16" target="_blank" rel="noopener">Открыть</a>
+        <button class="btn btn-ghost" onclick="copyLink(this, 'https://app.subframe.com/aeedf49f14a6/mcp/71563863-eb43-4b48-bb63-de47f516dc16')">⧉</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  M-OS · Координата 56 — Wave 1 design snapshot ·
+  <a href="https://app.subframe.com/aeedf49f14a6" target="_blank" rel="noopener">Subframe project</a> ·
+  <a href="https://github.com/m-creator-holding/coordinata56-docs" target="_blank" rel="noopener">Docs mirror</a>
+</footer>
+
+<div id="copyHint" class="copy-hint">Ссылка скопирована</div>
+
+<script>
+function copyLink(btn, url) {
+  navigator.clipboard.writeText(url).then(() => {
+    const hint = document.getElementById('copyHint');
+    hint.classList.add('show');
+    setTimeout(() => hint.classList.remove('show'), 1400);
+  });
+}
+</script>
+
+</body>
+</html>
