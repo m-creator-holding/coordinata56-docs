@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>M-OS · All Screens · Snapshot</title>
+<title>M-OS · Все экраны · Черновик</title>
 <style>
   :root {
     --bg: #0b1220;
@@ -21,13 +21,11 @@
     min-height: 100vh; padding: 24px 20px 80px; line-height: 1.5;
   }
   header {
-    max-width: 1600px; margin: 0 auto 20px;
+    max-width: 1800px; margin: 0 auto 20px;
     padding-bottom: 16px; border-bottom: 1px solid var(--border);
     display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   }
-  h1 {
-    margin: 0 0 6px; font-size: 24px; font-weight: 600; letter-spacing: -0.02em;
-  }
+  h1 { margin: 0 0 6px; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
   .sub { color: var(--fg-muted); font-size: 13px; }
   .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
@@ -43,28 +41,75 @@
   .btn-primary:hover { background: #93c5fd; }
 
   .meta {
-    max-width: 1600px; margin: 0 auto 20px;
+    max-width: 1800px; margin: 0 auto 30px;
     font-size: 12px; color: var(--fg-muted);
     padding: 10px 14px; border: 1px dashed var(--border); border-radius: 8px;
   }
   .meta b { color: var(--fg); font-weight: 500; }
 
-  .shot-wrap {
-    max-width: 1600px; margin: 0 auto;
-    background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0,0,0,.3);
+  .flow-title {
+    max-width: 1800px; margin: 36px auto 14px;
+    font-size: 13px; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--fg-muted); font-weight: 600;
+    display: flex; align-items: center; gap: 12px;
   }
-  .shot-wrap img {
+  .flow-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .flow-title .count { color: var(--fg); font-weight: 700; }
+
+  .grid {
+    max-width: 1800px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+    gap: 20px;
+  }
+  .tile {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .tile-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    gap: 10px;
+  }
+  .tile-title { font-size: 14px; font-weight: 600; margin: 0; }
+  .tile-num {
+    display: inline-block; font-size: 10px; color: var(--fg-muted);
+    letter-spacing: .08em; margin-right: 8px; font-weight: 500;
+  }
+  .tile-open {
+    font-size: 12px; color: var(--accent); text-decoration: none;
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+  }
+  .tile-open:hover { background: var(--accent); color: #0b1220; border-color: var(--accent); }
+  .tile-img-wrap {
+    background: #fff;
+    overflow: hidden;
+  }
+  .tile-img-wrap img {
     display: block;
     width: 100%;
     height: auto;
+    /* Crop top/bottom whitespace from Subframe review page */
+    object-fit: cover;
+    object-position: center 60%;
   }
 
+  /* Big overview image for existing 5 pages */
+  .overview-wrap {
+    max-width: 1800px; margin: 0 auto;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  .overview-wrap img { display: block; width: 100%; height: auto; }
+
   footer {
-    max-width: 1600px; margin: 48px auto 0;
+    max-width: 1800px; margin: 48px auto 0;
     padding-top: 16px; border-top: 1px solid var(--border);
     font-size: 12px; color: var(--fg-muted);
   }
@@ -75,8 +120,8 @@
 
 <header>
   <div>
-    <h1>M-OS · Все экраны · Снимок Subframe</h1>
-    <div class="sub">Статический снимок списка всех страниц проекта Subframe. Обновляется по мере появления новых экранов.</div>
+    <h1>M-OS · Все экраны — Черновик</h1>
+    <div class="sub">20 дизайнов: 5 утверждённых ранее + 15 новых. Снимки без авторизации.</div>
   </div>
   <div class="nav-links">
     <a class="btn" href="./">← Карточки</a>
@@ -85,18 +130,104 @@
 </header>
 
 <div class="meta">
-  <b>Снимок:</b> <span id="ts">2026-04-22 14:05 UTC</span> ·
-  <b>Источник:</b> <code>app.subframe.com/aeedf49f14a6/playground</code> ·
-  <b>Проект:</b> M M's Project (Pro) ·
-  <b>Режим:</b> «Черновик» — все новые экраны попадают сюда
+  <b>Дата:</b> 2026-04-22 · <b>Проект:</b> M M's Project (Pro) · <b>Всего:</b> 20 экранов ·
+  <b>Режим:</b> все новые — во flow «Черновик», 5 исходных — в (MCP Sessions) / Your Pages ·
+  <b>Источник:</b> Subframe screenshots через Playwright (авторизованная сессия)
 </div>
 
-<div class="shot-wrap">
-  <img src="./assets/subframe-playground.png" alt="Subframe Pages — полный список страниц проекта M-OS">
+<!-- EXISTING 5 PAGES (PLAYGROUND OVERVIEW) -->
+<div class="flow-title"><span>✅ Утверждено ранее <span class="count">(5)</span></span></div>
+<div class="overview-wrap">
+  <img src="./assets/subframe-playground.png" alt="Subframe Pages overview — 5 existing pages">
+</div>
+
+<!-- WAVE 1 REGENERATED (7) -->
+<div class="flow-title"><span>📝 Wave 1 — Admin/BPM регенерация <span class="count">(7)</span></span></div>
+<div class="grid">
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">06</span><span class="tile-title">Роли (Roles)</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/9cf2104f-5a60-4c1a-9d8b-d9ef34368b02">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-roles.png" alt="Roles"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">07</span><span class="tile-title">Матрица прав (Permissions)</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/e5d41b4a-4abe-4cb3-9222-5495e45fb9ab">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-permissions-matrix.png" alt="Permissions Matrix"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">08</span><span class="tile-title">Настройки компании</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/28b8a54d-ec00-423a-b51e-63d35e5a0cee">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-company-settings.png" alt="Company Settings"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">09</span><span class="tile-title">Интеграции</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/d4ab614e-83db-4234-a2cb-d2f8157af55f">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-integrations.png" alt="Integrations"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">10</span><span class="tile-title">BPM Шаблоны процессов</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/cf814134-3bdb-4ab6-b548-ded7cf42fd46">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-bpm-process-definitions.png" alt="BPM Process Definitions"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">11</span><span class="tile-title">Каналы уведомлений</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/b216cc1d-584e-45a8-a664-b6ee8ec62a18">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-notification-channels.png" alt="Notification Channels"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">12</span><span class="tile-title">Журнал аудита</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/50fc42b1-045c-41a6-8410-fb0e27b0a784">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-audit-log-viewer.png" alt="Audit Log Viewer"></div>
+  </div>
+</div>
+
+<!-- WAVE 2 (8) -->
+<div class="flow-title"><span>📝 Wave 2 — экраны второго уровня <span class="count">(8)</span></span></div>
+<div class="grid">
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">13</span><span class="tile-title">Карточка компании (вкладки)</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/2dc06aea-adcb-4c48-bdca-b4fce5fdfd5c">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-company-detail-card.png" alt="Company Detail Card"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">14</span><span class="tile-title">Банковский счёт (Dialog)</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/5bbdc4d6-c65a-433a-aae0-87ef9584189e">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-bank-account-dialog.png" alt="Bank Account Dialog"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">15</span><span class="tile-title">Шаблоны документов</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/e4d461e4-906b-490e-b498-8ef3ffe95f9d">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-document-templates.png" alt="Document Templates"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">16</span><span class="tile-title">Системная конфигурация</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/656472f7-c223-4ddf-9b65-de0388728365">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-system-config.png" alt="System Config"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">17</span><span class="tile-title">Карточка роли (вкладки)</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/2e9f09e4-9382-4680-830b-be0b46557036">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-role-detail.png" alt="Role Detail"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">18</span><span class="tile-title">Создание пользователя</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/4a7014a1-06e9-4f15-bfa2-5a60158ecb5b">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-user-create-form.png" alt="User Create Form"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">19</span><span class="tile-title">История версий BPM</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/48972571-8f42-4c88-9fb2-d13634326dac">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-bpm-process-version-history.png" alt="BPM Process Version History"></div>
+  </div>
+  <div class="tile">
+    <div class="tile-head"><div><span class="tile-num">20</span><span class="tile-title">Экземпляр процесса</span></div>
+      <a class="tile-open" target="_blank" rel="noopener" href="https://app.subframe.com/aeedf49f14a6/mcp/a1b1899e-20c0-454e-b155-a6c61aeb91d6">В Subframe ↗</a></div>
+    <div class="tile-img-wrap"><img src="./assets/wave-process-instance-viewer.png" alt="Process Instance Viewer"></div>
+  </div>
 </div>
 
 <footer>
-  M-OS · Координата 56 — project snapshot ·
+  M-OS · Координата 56 — Snapshot 2026-04-22 ·
   <a href="./">Вид карточками</a> ·
   <a href="https://app.subframe.com/aeedf49f14a6/playground" target="_blank" rel="noopener">Live Subframe</a> ·
   <a href="https://github.com/m-creator-holding/coordinata56-docs" target="_blank" rel="noopener">Docs mirror</a>
